@@ -8,7 +8,7 @@ Differences vs V1
 - Allowlist of pairs (on-chain gating).
 - Replay protection (seenRequest) and duplicate request guard per pair.
 - Monotonic sequence per pair (seqByPair).
-- On-chain staleness tracking (updatedAtByPair, isStale).
+- On-chain staleness tracking (updatedAtByPair, isStale) with pause control.
 - Validation of oracle values (price > 0, confidence 0..1e6, flags mask <= 0x7).
 - Safer governance (owner + relayer with events).
 - Extended ResultSubmitted event with updatedAt + seq.
@@ -22,6 +22,10 @@ Stale seconds
 - staleSeconds is enforced via isStale(pair).
 - Owner can update using setStaleSeconds(newValue).
 - Bounds: min 10 seconds, max 1 day.
+
+Pause control
+- Owner can pause/unpause the feed (OpenZeppelin Pausable).
+- When paused, submitResult always reverts.
 
 Compatibility
 - getLatest(bytes32) and getLatestRequestId(bytes32) match V1 signatures.

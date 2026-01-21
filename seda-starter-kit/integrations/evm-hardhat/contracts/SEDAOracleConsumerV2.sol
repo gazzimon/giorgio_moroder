@@ -1,12 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.28;
 
+import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
+
 /**
  * @title SEDAOracleConsumerV2
  * @notice Stores relayed oracle results keyed by pair hash (trusted relayer model).
  * @dev No cryptographic proof verification. Relayer is trusted. This contract is a feed, not settlement.
  */
-contract SEDAOracleConsumerV2 {
+contract SEDAOracleConsumerV2 is Pausable {
     /// @notice Immutable SEDA oracle program id (bytes32)
     bytes32 public immutable oracleProgramId;
 
@@ -37,9 +39,6 @@ contract SEDAOracleConsumerV2 {
     /// @notice Staleness threshold in seconds
     uint256 public staleSeconds;
 
-    /// @notice Max future drift tolerance (reserved for observedAt use)
-    uint256 public maxFutureDriftSeconds;
-
     uint256 private constant MIN_STALE_SECONDS = 10;
     uint256 private constant MAX_STALE_SECONDS = 1 days;
 
@@ -62,15 +61,14 @@ contract SEDAOracleConsumerV2 {
     event OwnershipTransferred(address indexed oldOwner, address indexed newOwner);
     event PairAllowed(bytes32 indexed pair, bool allowed);
     event StaleSecondsUpdated(uint256 oldValue, uint256 newValue);
-
-    constructor(bytes32 _oracleProgramId, address _relayer, uint256 _staleSeconds, uint256 _maxFutureDriftSeconds) {
+    constructor(bytes32 _oracleProgramId, address _relayer, uint256 _staleSeconds) {
+        if (_oracleProgramId == bytes32(0)) revert BadParams();
         if (_relayer == address(0)) revert BadParams();
         if (_staleSeconds < MIN_STALE_SECONDS || _staleSeconds > MAX_STALE_SECONDS) revert BadParams();
         oracleProgramId = _oracleProgramId;
         relayer = _relayer;
         owner = msg.sender;
         staleSeconds = _staleSeconds;
-        maxFutureDriftSeconds = _maxFutureDriftSeconds;
     }
 
     function transferOwnership(address newOwner) external {
@@ -105,18 +103,13 @@ contract SEDAOracleConsumerV2 {
 
     /**
      * @notice Submit a relayed result (trusted relayer model).
-     * @dev `sedaProof` is ignored in V2 (placeholder removed).
+     * @dev Relayer publishes only when SEDA consensus is reached.
      */
     /// values[0] = fair_price (1e6)
     /// values[1] = confidence_score (1e6)
     /// values[2] = max_safe_execution_size (1e6)
     /// values[3] = flags (bitmask: bits 0..2)
-    function submitResult(
-        bytes32 requestId,
-        bytes32 pair,
-        int256[4] calldata values,
-        bytes calldata sedaProof
-    ) external {
+    function submitResult(bytes32 requestId, bytes32 pair, int256[4] calldata values) external whenNotPaused {
         if (msg.sender != relayer) revert NotRelayer();
         if (!allowedPair[pair]) revert PairNotAllowed();
         if (lastRequestIdByPair[pair] == requestId) revert DuplicateRequestForPair();
@@ -134,8 +127,16 @@ contract SEDAOracleConsumerV2 {
         seqByPair[pair] += 1;
 
         emit ResultSubmitted(requestId, pair, values, block.timestamp, seqByPair[pair]);
+    }
 
-        sedaProof;
+    function pause() external {
+        if (msg.sender != owner) revert NotOwner();
+        _pause();
+    }
+
+    function unpause() external {
+        if (msg.sender != owner) revert NotOwner();
+        _unpause();
     }
 
     function getLatest(bytes32 pair) external view returns (int256[4] memory) {
