@@ -8,6 +8,7 @@ const PAY_TO = process.env.MERCHANT_ADDRESS ?? '';
 const ASSET = NETWORK === CronosNetwork.CronosMainnet ? Contract.USDCe : Contract.DevUSDCe;
 const RESOURCE = process.env.PUBLIC_RESOURCE_URL ?? 'http://localhost:8787/api/data';
 const PRICE = process.env.PRICE_BASE_UNITS ?? '1000000';
+const FEE = process.env.FEE_BASE_UNITS ?? '0';
 
 /**
  * Creates an Express middleware that enforces X402 payment for a protected resource.
@@ -37,6 +38,7 @@ export const requirePaidAccess = (opts?: { description?: string }) => {
     payTo: PAY_TO,
     asset: ASSET,
     maxAmountRequired: PRICE,
+    feeBaseUnits: FEE,
     description: (req: Request) => {
       const pair = String(req.query.pair ?? '').trim().toUpperCase();
       return opts?.description ?? (pair ? `Unlock price for ${pair}` : 'Unlock resource');
@@ -68,4 +70,4 @@ export const requirePaidAccess = (opts?: { description?: string }) => {
  * This object is intended for diagnostics and downstream configuration.
  * Values are resolved at module load time.
  */
-export const x402Config = { NETWORK, PAY_TO, ASSET, RESOURCE, PRICE };
+export const x402Config = { NETWORK, PAY_TO, ASSET, RESOURCE, PRICE, FEE };

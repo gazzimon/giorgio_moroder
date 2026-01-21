@@ -168,6 +168,34 @@ export const PairInput = styled.input`
   }
 `;
 
+export const AmountGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+`;
+
+export const AmountField = styled.input`
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(125, 188, 225, 0.2);
+  background: rgba(10, 18, 34, 0.85);
+  color: var(--text);
+  font-size: 1rem;
+
+  &::placeholder {
+    color: rgba(154, 176, 200, 0.7);
+  }
+`;
+
+export const AmountLabel = styled.div`
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin-bottom: 6px;
+`;
+
 export const ButtonRow = styled.div`
   display: flex;
   flex-wrap: wrap;

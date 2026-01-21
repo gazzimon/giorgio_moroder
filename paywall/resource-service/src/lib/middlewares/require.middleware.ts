@@ -50,6 +50,7 @@ export const requireX402Payment = (options: RequireX402Options) => {
     payTo,
     asset,
     maxAmountRequired,
+    feeBaseUnits,
     maxTimeoutSeconds = 300,
     description,
     mimeType = 'application/json',
@@ -82,7 +83,7 @@ export const requireX402Payment = (options: RequireX402Options) => {
       mimeType,
       resource: resolvedResource,
       outputSchema,
-      extra: { paymentId },
+      extra: feeBaseUnits ? { paymentId, feeUSDC: feeBaseUnits } : { paymentId },
     };
 
     const response: X402Response = {

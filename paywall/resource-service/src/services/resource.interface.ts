@@ -161,6 +161,9 @@ export interface RequireX402Options {
   /** Maximum amount required (recommended to use base units). */
   maxAmountRequired: string;
 
+  /** Optional fee amount in base units (devUSDC.e, 6 decimals). */
+  feeBaseUnits?: string;
+
   /**
    * Maximum time (in seconds) to allow completion of the payment challenge.
    *

@@ -63,7 +63,7 @@ export interface PaymentChallenge {
      * The server includes a `paymentId` here that must be echoed back
      * during settlement.
      */
-    extra?: { paymentId?: string };
+    extra?: { paymentId?: string; feeUSDC?: string };
   }>;
 }
 
@@ -93,6 +93,12 @@ export interface PostPayRequest {
    * This value is typically taken directly from `challenge.accepts[0]`.
    */
   paymentRequirements: PaymentChallenge['accepts'][number];
+
+  /** Optional split input: devUSDC.e amount (6 decimals as string). */
+  amountUSDC?: string;
+
+  /** Optional split input: TCRO amount (18 decimals as string). */
+  amountTCRO?: string;
 }
 
 /**

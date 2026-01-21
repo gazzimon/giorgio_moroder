@@ -3,6 +3,9 @@ import { DataViewer } from '../../components/DataViewer';
 import { useX402Flow } from '../../hooks/useX402Flow';
 import {
   Badge,
+  AmountField,
+  AmountGrid,
+  AmountLabel,
   ButtonRow,
   ContentGrid,
   GhostButton,
@@ -39,11 +42,13 @@ export interface ResourceContainerProps {
 }
 
 export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
-  const { status, data, paymentId, isBusy, fetchSecret, retryWithPaymentId } = useX402Flow({
+  const { status, data, paymentId, feeUSDC, isBusy, fetchSecret, retryWithPaymentId } = useX402Flow({
     apiBase: props.apiBase,
   });
   const pairs = useMemo(() => ['WCRO-USDC'], []);
   const [pair, setPair] = useState<string>(pairs[0] ?? '');
+  const [amountUSDC, setAmountUSDC] = useState<string>('0');
+  const [amountTCRO, setAmountTCRO] = useState<string>('0');
 
   const payload = useMemo(() => {
     if (!data) return null;
@@ -69,6 +74,16 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
   const cronosLink = payload?.cronosTxHash
     ? `https://explorer.cronos.org/testnet/tx/${payload.cronosTxHash}`
     : null;
+
+  const feeLabel = useMemo(() => {
+    if (!feeUSDC) return '--';
+    const raw = feeUSDC.replace(/[^0-9]/g, '');
+    if (!raw) return feeUSDC;
+    const padded = raw.padStart(7, '0');
+    const whole = padded.slice(0, -6) || '0';
+    const fraction = padded.slice(-6);
+    return `${whole}.${fraction}`;
+  }, [feeUSDC]);
 
   const activeStep = useMemo(() => {
     const norm = status.toLowerCase();
@@ -132,8 +147,32 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
             placeholder="WCRO-USDC only (MVP)"
           />
 
+          <AmountGrid>
+            <div>
+              <AmountLabel>devUSDC.e</AmountLabel>
+              <AmountField
+                inputMode="decimal"
+                value={amountUSDC}
+                onChange={(event) => setAmountUSDC(event.target.value)}
+                placeholder="USDC amount (6 decimals)"
+              />
+            </div>
+            <div>
+              <AmountLabel>TCRO</AmountLabel>
+              <AmountField
+                inputMode="decimal"
+                value={amountTCRO}
+                onChange={(event) => setAmountTCRO(event.target.value)}
+                placeholder="TCRO amount (18 decimals)"
+              />
+            </div>
+          </AmountGrid>
+
           <ButtonRow>
-            <PrimaryButton onClick={() => void fetchSecret(pair)} disabled={isBusy}>
+            <PrimaryButton
+              onClick={() => void fetchSecret(pair, undefined, { amountUSDC, amountTCRO })}
+              disabled={isBusy}
+            >
               {isBusy ? 'Working...' : 'Fetch Price'}
             </PrimaryButton>
             <GhostButton onClick={() => void retryWithPaymentId()} disabled={!paymentId || isBusy}>
@@ -194,6 +233,10 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
                 ) : (
                   <MetaValue>--</MetaValue>
                 )}
+              </MetaItem>
+              <MetaItem>
+                <MetaKey>Fee (USDC)</MetaKey>
+                <MetaValue>{feeLabel}</MetaValue>
               </MetaItem>
               <MetaItem>
                 <MetaKey>paymentId</MetaKey>
