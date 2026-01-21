@@ -113,6 +113,12 @@ export interface PayParams {
 
   /** Requirements returned by a prior 402 challenge (SDK-specific). */
   paymentRequirements: PaymentRequirements;
+
+  /** Optional split input: devUSDC.e amount (6 decimals as string). */
+  amountUSDC?: string;
+
+  /** Optional split input: TCRO amount (18 decimals as string). */
+  amountTCRO?: string;
 }
 
 /**
@@ -124,6 +130,15 @@ export interface PaidRecord {
 
   /** Optional settlement transaction hash, if available. */
   txHash?: string;
+
+  /** Optional payer address (if available from verification). */
+  payer?: string;
+
+  /** Optional split input: devUSDC.e amount (6 decimals as string). */
+  amountUSDC?: string;
+
+  /** Optional split input: TCRO amount (18 decimals as string). */
+  amountTCRO?: string;
 
   /** Unix timestamp (milliseconds) when the record was stored. */
   at: number;
@@ -137,7 +152,7 @@ export interface PaidRecord {
  * - On failure, `ok: false` includes a stable error code and SDK response details.
  */
 export type PayResult =
-  | { ok: true; txHash?: string }
+  | { ok: true; txHash?: string; payer?: string; amountUSDC?: string; amountTCRO?: string }
   | { ok: false; error: 'verify_failed'; details: X402VerifyResponse }
   | { ok: false; error: 'settle_failed'; details: X402SettleResponse };
 

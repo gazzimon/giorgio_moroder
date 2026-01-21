@@ -179,16 +179,26 @@ export class ResourceService {
    * @returns The settlement result as returned by {@link handleX402Payment}.
    * @throws Re-throws any error raised by the underlying settlement helper or SDK.
    */
-  async settlePayment(params: { paymentId: string; paymentHeader: string; paymentRequirements: PaymentRequirements }) {
+  async settlePayment(params: {
+    paymentId: string;
+    paymentHeader: string;
+    paymentRequirements: PaymentRequirements;
+    amountUSDC?: string;
+    amountTCRO?: string;
+  }) {
     console.info('[x402] settlePayment start', {
       paymentId: params.paymentId,
       resource: (params.paymentRequirements as { resource?: string }).resource,
+      amountUSDC: params.amountUSDC,
+      amountTCRO: params.amountTCRO,
     });
     const result = await handleX402Payment({
       facilitator: this.facilitator,
       paymentId: params.paymentId,
       paymentHeader: params.paymentHeader,
       paymentRequirements: params.paymentRequirements,
+      amountUSDC: params.amountUSDC,
+      amountTCRO: params.amountTCRO,
     });
     console.info('[x402] settlePayment result', { ok: result.ok, paymentId: params.paymentId });
     if (result.ok) {

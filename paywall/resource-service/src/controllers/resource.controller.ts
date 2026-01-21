@@ -80,16 +80,21 @@ export class ResourceController {
    */
   public async pay(req: Request, res: Response, next: NextFunction): Promise<Response | void> {
     try {
-      const { paymentId, paymentHeader, paymentRequirements } = req.body ?? {};
+      const { paymentId, paymentHeader, paymentRequirements, amountUSDC, amountTCRO } = req.body ?? {};
 
       if (!paymentId || !paymentHeader || !paymentRequirements) {
         return res.status(HttpCode.BadRequest).json({ error: 'missing payment fields' });
+      }
+      if (!isValidAmount(amountUSDC) || !isValidAmount(amountTCRO)) {
+        return res.status(HttpCode.BadRequest).json({ error: 'invalid amount' });
       }
 
       const response = await this.resourceService.settlePayment({
         paymentId,
         paymentHeader,
         paymentRequirements,
+        amountUSDC,
+        amountTCRO,
       });
 
       if (!response.ok) {
@@ -101,4 +106,13 @@ export class ResourceController {
       next(e);
     }
   }
+}
+
+function isValidAmount(value: unknown): boolean {
+  if (value === undefined || value === null || value === '') return true;
+  if (typeof value !== 'string') return false;
+  if (!/^\d+(\.\d+)?$/.test(value)) return false;
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return false;
+  return numeric >= 0;
 }

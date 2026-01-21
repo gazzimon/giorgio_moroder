@@ -117,8 +117,10 @@ export async function handleX402Payment(params: {
   paymentId: string;
   paymentHeader: string;
   paymentRequirements: VerifyRequest['paymentRequirements'];
+  amountUSDC?: string;
+  amountTCRO?: string;
 }): Promise<PayResult> {
-  const { facilitator, paymentId, paymentHeader, paymentRequirements } = params;
+  const { facilitator, paymentId, paymentHeader, paymentRequirements, amountUSDC, amountTCRO } = params;
 
   const body: VerifyRequest = {
     x402Version: 1,
@@ -144,9 +146,27 @@ export async function handleX402Payment(params: {
     };
   }
 
-  paid.set(paymentId, { settled: true, txHash: settle.txHash, at: Date.now() });
+  const payer = extractPayer(verify);
+  paid.set(paymentId, { settled: true, txHash: settle.txHash, payer, amountUSDC, amountTCRO, at: Date.now() });
   return {
     ok: true,
     txHash: settle.txHash,
+    payer,
+    amountUSDC,
+    amountTCRO,
   };
+}
+
+function extractPayer(verify: X402VerifyResponse): string | undefined {
+  if (!verify || typeof verify !== 'object') return undefined;
+  const asRecord = verify as unknown as Record<string, unknown>;
+  const direct = asRecord.payer;
+  if (typeof direct === 'string') return direct;
+  const payment = asRecord.payment;
+  if (payment && typeof payment === 'object') {
+    const paymentRecord = payment as Record<string, unknown>;
+    if (typeof paymentRecord.from === 'string') return paymentRecord.from;
+    if (typeof paymentRecord.payer === 'string') return paymentRecord.payer;
+  }
+  return undefined;
 }
