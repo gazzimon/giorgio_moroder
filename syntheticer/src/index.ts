@@ -165,7 +165,8 @@ async function main() {
         return res.status(400).json({ error: 'missing pair' });
       }
 
-      const amountUSDCInput = parseAmount(pay.amountUSDC, 'amountUSDC');
+      const amountUSDCInput =
+        pay.amountUSDC && /^\d+$/.test(pay.amountUSDC) ? BigInt(pay.amountUSDC) : 0n;
       const amountTCRO = parseAmount(pay.amountTCRO, 'amountTCRO');
       const feeUSDC = parseAmount(pay.feeUSDC, 'feeUSDC');
 
@@ -192,10 +193,7 @@ async function main() {
         }
       }
       const payer = transfer.payer;
-      if (amountUSDCInput > 0n && transfer.value !== amountUSDCInput) {
-        return res.status(400).json({ error: 'paymentTx amount mismatch' });
-      }
-      const amountUSDC = amountUSDCInput > 0n ? amountUSDCInput : transfer.value;
+      const amountUSDC = transfer.value;
       if (amountUSDC <= 0n) {
         return res.status(400).json({ error: 'amountUSDC must be > 0' });
       }
