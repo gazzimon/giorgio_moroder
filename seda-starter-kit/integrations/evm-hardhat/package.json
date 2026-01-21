@@ -7,6 +7,7 @@
     "clean": "rimraf artifacts cache typechain-types",
     "compile": "hardhat compile",
     "deploy:usx402": "hardhat run scripts/deploy-usx402.ts --network cronosTestnet",
+    "deploy:consumer:v2": "hardhat run scripts/deploy-consumer-v2.ts --network cronosTestnet",
     "export:usx402:standardjson": "hardhat run scripts/export-usx402-standard-json.ts",
     "verify:usx402": "hardhat run scripts/verify-usx402.ts --network cronosTestnet",
     "mint:usx402": "hardhat run scripts/mint-usx402.ts --network cronosTestnet",

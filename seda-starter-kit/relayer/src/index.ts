@@ -57,9 +57,7 @@ const DR_BLOCK_HEIGHT = DR_BLOCK_HEIGHT_RAW ? parseInt(DR_BLOCK_HEIGHT_RAW, 10) 
 const ONESHOT =
   process.env.ONESHOT === 'true' || hasArg('--once') || Boolean(DR_ID) || Boolean(DR_RESULT);
 
-const consumerAbi = [
-  'function submitResult(bytes32 requestId, bytes32 pair, int256[4] values, bytes sedaProof)',
-];
+const consumerAbi = ['function submitResult(bytes32 requestId, bytes32 pair, int256[4] values)'];
 
 function loadState(): RelayerState {
   if (!fs.existsSync(STATE_PATH)) {
@@ -208,8 +206,6 @@ async function main() {
   const wallet = new ethers.Wallet(normalizeHex(RELAYER_PRIVATE_KEY), provider);
   const consumer = new ethers.Contract(CONSUMER_ADDRESS, consumerAbi, wallet);
   const coder = ethers.AbiCoder.defaultAbiCoder();
-  const proof = coder.encode(['bytes32'], [normalizeHex(ORACLE_PROGRAM_ID)]);
-
   const state = loadState();
 
   const relayRequest = async (req: ExplorerRequest) => {
@@ -230,7 +226,7 @@ async function main() {
     console.log(`Relaying ${pair} (${requestId}) = [${values.join(', ')}]`);
 
     const requestIdHex = normalizeHex(requestId);
-    const tx = await consumer.submitResult(requestIdHex, pairHash, values, proof);
+    const tx = await consumer.submitResult(requestIdHex, pairHash, values);
     console.log(`Submitted tx: ${tx.hash}`);
     await tx.wait();
 
