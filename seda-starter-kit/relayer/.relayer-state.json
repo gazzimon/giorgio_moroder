@@ -1,0 +1,60 @@
+{
+  "processed": {
+    "abe2d99005d08c8fd8ebf8023dd23cf2d6cdfd5ecd927a6445b2c3159138dd88": true,
+    "8ff04c9ce9d48356677996f65ce2f26033a593bf72031c43559939ed9f433ed6": true,
+    "b6bdbc865be352cb6b3c9de673fbab322529a03e77d40c30458510e6a88c91b1": true,
+    "4b5ebee3bf7a2ea22bae036e9e91b434607c00276fc4a37935f3685d05ddea6c": true,
+    "359f280c165d4044eb1e58364c84ae0436a898f8859a4aae173d5106e3a3298d": true,
+    "d2b3b6b40187c6884af46ec36aab5624f12527ae2b91450a71492d8fb04bd427": true,
+    "0da891e47ab907dab291f40ec055ce505821231786274239192bf438b7e2c4b3": true,
+    "2061ca403f23a161617ed034720f9e40c7548fff93bbb0e21668a0604b43e2c6": true,
+    "f862b583ccea4ded25b49b4e676fcaa088ac4a097f13823314b143ab264739a0": true,
+    "44472ea95d4b814c7848a9bf3b6b424c0718c578bdaf313bf59199e60afc9b13": true,
+    "863100aa305eb66d102d11e284cd3d538b9de8461c936d6a1d65f99431dda178": true,
+    "242572c53e1974a300b65681217e8b13cbd9a539ca22335180f64bb84c6268da": true,
+    "c10aff67b236aabf30154b7dd8cdf0f2b37e29faaa8f47ac3c8bbf38906c3be4": true,
+    "0be3dedd793946c1039fe00531dcd6b5fe89f1f015b0eb9fa3cc8b9b9b4e4a9b": true,
+    "b2df60e79a7baa891fde7ab1d87f3fe1ffd9c609d7d278dda7f00934ef4411e4": true,
+    "addc3617f6f13ed8b105ed10fd882d1dd41fd72798305ec1fe64228b0ac23b7e": true,
+    "e04b284ebe7c95756bbef65a5a76b998a308eb8bc08b05c658a98e92f0a02184": true,
+    "1aefcd3766c7a48d111f03c693c4ffa8eb60cc99879f33d702c3bfbd5f5c48bf": true,
+    "d634b9789481c12f4155abde6019f6ee22208cc1d490c8993daa3e72a5dde795": true,
+    "ba65b51684c798468ef9282cf245d96d45942beeec73a0b73c5c607ca768ed15": true,
+    "72a46a41876e74e94a4099338681a5fb36b8a492ff9c1f69482365f80382d424": true,
+    "1d64f049ba8d88bfe3ecbf9dd0c073624e0156ed5c751020786696b77141b08e": true,
+    "72e38802411373bcf277822792268f08f9143ee9ce69617749afac0caad23924": true,
+    "61858621fafbc18c90d5a9cf67a36fb9b8b7ca8c026493478766052ffde83883": true
+  },
+  "lastByPair": {
+    "USDT-USDC": {
+      "requestId": "addc3617f6f13ed8b105ed10fd882d1dd41fd72798305ec1fe64228b0ac23b7e",
+      "drBlockHeight": 7274343,
+      "txHash": "0x956048b8a6988ce895802cb9aba9f8773f1b54071401f931eddd8ed65413167e",
+      "updatedAt": "2026-01-15T02:53:12.266Z"
+    },
+    "WCRO-USDC": {
+      "requestId": "61858621fafbc18c90d5a9cf67a36fb9b8b7ca8c026493478766052ffde83883",
+      "drBlockHeight": 7306066,
+      "txHash": "0x185b7960254981c9c9845fbf075a2ed0bca1e173ef4f29d65f57720bc1bf63c6",
+      "updatedAt": "2026-01-18T03:17:54.652Z"
+    },
+    "WCRO-ETH": {
+      "requestId": "0be3dedd793946c1039fe00531dcd6b5fe89f1f015b0eb9fa3cc8b9b9b4e4a9b",
+      "drBlockHeight": 7274271,
+      "txHash": "0x8fb457c981060e6ad2012683888554dd4e53221ffca71df0059eda509f115ca1",
+      "updatedAt": "2026-01-15T02:43:37.864Z"
+    },
+    "VVS-WCRO": {
+      "requestId": "44472ea95d4b814c7848a9bf3b6b424c0718c578bdaf313bf59199e60afc9b13",
+      "drBlockHeight": 7274093,
+      "txHash": "0xa486eedfa078fa80badf3479c5aecb96e786f656c02f7a04f1f005d3b36a0595",
+      "updatedAt": "2026-01-15T02:19:16.166Z"
+    },
+    "WBTC-WCRO": {
+      "requestId": "e04b284ebe7c95756bbef65a5a76b998a308eb8bc08b05c658a98e92f0a02184",
+      "drBlockHeight": 7274353,
+      "txHash": "0x0e71e07ebc74f543a61c23302646346d98fd4988f8f1e1762765a0b7b077cb24",
+      "updatedAt": "2026-01-15T02:54:36.284Z"
+    }
+  }
+}
