@@ -31,6 +31,16 @@ type RelayerState = {
       drBlockHeight?: number;
       txHash?: string;
       updatedAt?: string;
+      values?: {
+        fairPriceScaled: string;
+        fairPrice: string;
+        confidenceScoreScaled: string;
+        confidenceScore: string;
+        maxSafeExecutionSizeScaled: string;
+        maxSafeExecutionSize: string;
+        flags: string;
+        decimals: number;
+      };
     }
   >;
 };
@@ -153,18 +163,40 @@ export class ResourceService {
    * @returns An object representing the unlocked/paid content response.
    */
   async getSecretPayload(pair: string) {
-    const consumer = this.getConsumer();
-    const pairKey = ethers.keccak256(ethers.toUtf8Bytes(pair));
-    const [values, requestIdOnChain] = await Promise.all([
-      consumer.getLatest(pairKey),
-      consumer.getLatestRequestId(pairKey),
-    ]);
-
-    const parsedValues = (values as bigint[]).map((value) => BigInt(value.toString()));
-    const [fairPrice, confidence, maxSize, flags] = parsedValues;
     const state = loadRelayerState();
     const meta = state.lastByPair?.[pair];
-    const drId = meta?.requestId ?? stripHexPrefix(requestIdOnChain?.toString?.() ?? '');
+    let chainValues: bigint[] | null = null;
+    let requestIdOnChain: string | null = null;
+
+    try {
+      const consumer = this.getConsumer();
+      const pairKey = ethers.keccak256(ethers.toUtf8Bytes(pair));
+      const [values, requestId] = await Promise.all([
+        consumer.getLatest(pairKey),
+        consumer.getLatestRequestId(pairKey),
+      ]);
+      chainValues = (values as bigint[]).map((value) => BigInt(value.toString()));
+      requestIdOnChain = requestId?.toString?.() ?? null;
+    } catch (error) {
+      if (!meta?.values) {
+        throw error;
+      }
+    }
+
+    const metaValues = meta?.values;
+    const decimals = metaValues?.decimals ?? 6;
+
+    const [fairPrice, confidence, maxSize, flags] =
+      metaValues && metaValues.fairPriceScaled
+        ? [
+            BigInt(metaValues.fairPriceScaled),
+            BigInt(metaValues.confidenceScoreScaled),
+            BigInt(metaValues.maxSafeExecutionSizeScaled),
+            BigInt(metaValues.flags),
+          ]
+        : chainValues ?? [BigInt(0), BigInt(0), BigInt(0), BigInt(0)];
+
+    const drId = meta?.requestId ?? stripHexPrefix(requestIdOnChain ?? '');
     const drBlockHeight = meta?.drBlockHeight ?? null;
     const sedaExplorerUrl =
       drId && drBlockHeight
@@ -174,14 +206,14 @@ export class ResourceService {
     return {
       ok: true,
       pair,
-      fairPriceScaled: fairPrice.toString(),
-      fairPrice: formatScaled(fairPrice, 6),
-      confidenceScoreScaled: confidence.toString(),
-      confidenceScore: formatScaled(confidence, 6),
-      maxSafeExecutionSizeScaled: maxSize.toString(),
-      maxSafeExecutionSize: formatScaled(maxSize, 6),
-      flags: flags.toString(),
-      decimals: 6,
+      fairPriceScaled: metaValues?.fairPriceScaled ?? fairPrice.toString(),
+      fairPrice: metaValues?.fairPrice ?? formatScaled(fairPrice, decimals),
+      confidenceScoreScaled: metaValues?.confidenceScoreScaled ?? confidence.toString(),
+      confidenceScore: metaValues?.confidenceScore ?? formatScaled(confidence, decimals),
+      maxSafeExecutionSizeScaled: metaValues?.maxSafeExecutionSizeScaled ?? maxSize.toString(),
+      maxSafeExecutionSize: metaValues?.maxSafeExecutionSize ?? formatScaled(maxSize, decimals),
+      flags: metaValues?.flags ?? flags.toString(),
+      decimals,
       sedaExplorerUrl,
       sedaRequestId: drId || null,
       cronosTxHash: meta?.txHash ?? null,

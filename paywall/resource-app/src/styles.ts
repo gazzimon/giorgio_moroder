@@ -1,24 +1,21 @@
 import { createGlobalStyle } from 'styled-components';
 
 export const GlobalStyle = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800&family=Urbanist:wght@400;600;700&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
   :root {
-    --bg: #0b1020;
-    --bg-2: #0f1730;
-    --panel: rgba(16, 26, 45, 0.86);
-    --panel-strong: #111c33;
-    --border: rgba(125, 188, 225, 0.18);
-    --text: #e9f3ff;
-    --muted: #9ab0c8;
-    --aqua: #08f1ff;
-    --aqua-soft: rgba(8, 241, 255, 0.16);
-    --aqua-strong: #2df7ff;
-    --pink: #ff73df;
-    --violet: #5b6bff;
-    --success: #16e0a0;
-    --warn: #ffcf6a;
-    --shadow: 0 22px 60px rgba(6, 15, 30, 0.55);
+    --bg: #0a0b0e;
+    --bg-2: #13161c;
+    --panel: rgba(19, 22, 28, 0.86);
+    --panel-strong: #1a1d24;
+    --border: rgba(255, 255, 255, 0.08);
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #00ff9d;
+    --accent-2: #3b82f6;
+    --accent-3: #10b981;
+    --warn: #f59e0b;
+    --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
   }
 
   * {
@@ -28,17 +25,21 @@ export const GlobalStyle = createGlobalStyle`
   body {
     margin: 0;
     min-height: 100vh;
-    font-family: 'Manrope', system-ui, sans-serif;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
     color: var(--text);
     background:
-      radial-gradient(1200px 600px at 10% -10%, rgba(8, 241, 255, 0.18), transparent 60%),
-      radial-gradient(900px 500px at 110% 10%, rgba(91, 107, 255, 0.22), transparent 55%),
-      radial-gradient(800px 500px at 50% 110%, rgba(255, 115, 223, 0.16), transparent 65%),
-      linear-gradient(180deg, #090e1b 0%, #0a1123 45%, #0b1328 100%);
+      radial-gradient(900px 500px at 5% -10%, rgba(0, 255, 157, 0.16), transparent 65%),
+      radial-gradient(900px 500px at 110% 0%, rgba(59, 130, 246, 0.18), transparent 60%),
+      radial-gradient(700px 420px at 50% 120%, rgba(16, 185, 129, 0.16), transparent 70%),
+      linear-gradient(180deg, #090b11 0%, #0a111f 45%, #0c1426 100%);
   }
 
   a {
     color: inherit;
     text-decoration: none;
+  }
+
+  #root {
+    min-height: 100vh;
   }
 `;

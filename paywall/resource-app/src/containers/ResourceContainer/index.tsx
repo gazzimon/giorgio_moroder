@@ -10,21 +10,34 @@ import {
   ContentGrid,
   GhostButton,
   Hero,
-  MetaRow,
+  Brand,
+  BrandLogo,
+  BrandName,
+  BrandTag,
+  BrandText,
+  PanelSection,
+  SectionLabel,
+  SummaryCard,
+  SummaryGrid,
+  SummaryLabel,
+  SummaryMeta,
+  SummaryValue,
+  TopBar,
+  TopLink,
+  TopLinks,
   MetaItem,
   MetaKey,
   MetaLink,
+  MetaGrid,
   MetaValue,
   PairChip,
   PairGrid,
-  PairInput,
   Panel,
   PanelHeader,
   PanelTitle,
   PrimaryButton,
   ResultCard,
   ResultLabel,
-  ReturnLink,
   StatCard,
   StatLabel,
   StatRow,
@@ -113,14 +126,28 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
 
   return (
     <StyledContainer>
+      <TopBar>
+        <Brand>
+          <BrandLogo src="/logo-icon.svg" alt="Giorgio Moroder logo" />
+          <BrandText>
+            <BrandName>GIORGIO MORODER</BrandName>
+            <BrandTag>Oracle Paywall Console</BrandTag>
+          </BrandText>
+        </Brand>
+        <TopLinks>
+          <TopLink href="/">Landing</TopLink>
+          <TopLink href="https://github.com/gazzimon/giorgio_moroder" target="_blank" rel="noreferrer">
+            GitHub
+          </TopLink>
+        </TopLinks>
+      </TopBar>
       <ContentGrid>
         <Hero>
-          <ReturnLink href="/">Return to landing</ReturnLink>
-          <Badge>VVS-styled x402 Oracle</Badge>
-          <Title>Pay-per-query oracle pricing, with x402 on Cronos.</Title>
+          <Badge>SEDA / x402 / Cronos</Badge>
+          <Title>Execution-grade pricing, unlocked via pay-per-query access.</Title>
           <Subtitle>
-            Choose a pair, request the price, and unlock access with an EIP-3009 payment. The flow
-            is transparent: challenge, sign, settle, and fetch again.
+            Select the pair, sign the EIP-3009 payment, and re-fetch the payload. Each request is
+            settled on Cronos and verified by SEDA recomputation.
           </Subtitle>
           <StatRow>
             <StatCard>
@@ -131,6 +158,10 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
               <StatLabel>Network</StatLabel>
               <StatValue>Cronos Testnet</StatValue>
             </StatCard>
+            <StatCard>
+              <StatLabel>Oracle</StatLabel>
+              <StatValue>SEDA Compute</StatValue>
+            </StatCard>
           </StatRow>
         </Hero>
 
@@ -140,8 +171,8 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
             <StatusPill tone={tone}>Status: {status || 'Idle'}</StatusPill>
           </PanelHeader>
 
-          <div>
-            <MetaRow>Pick a pair</MetaRow>
+          <PanelSection>
+            <SectionLabel>Market pair</SectionLabel>
             <PairGrid>
               {pairs.map((item) => (
                 <PairChip key={item} active={pair === item} onClick={() => setPair(item)}>
@@ -149,35 +180,32 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
                 </PairChip>
               ))}
             </PairGrid>
-          </div>
+          </PanelSection>
 
-          <PairInput
-            value={pair}
-            onChange={(event) => setPair(event.target.value.toUpperCase())}
-            placeholder="WCRO-USDC only (MVP)"
-          />
-
-          <AmountGrid>
-            <div>
-              <AmountLabel>devUSDC.e</AmountLabel>
-              <AmountField
-                inputMode="decimal"
-                value={amountUSDC}
-                onChange={(event) => setAmountUSDC(event.target.value)}
-                placeholder="USDC amount"
-              />
-            </div>
-            <div>
-              <AmountLabel>TCRO</AmountLabel>
-              <AmountField
-                inputMode="decimal"
-                value="0"
-                onChange={() => setAmountTCRO('0')}
-                placeholder="TCRO disabled (MVP)"
-                disabled
-              />
-            </div>
-          </AmountGrid>
+          <PanelSection>
+            <SectionLabel>Payment intent</SectionLabel>
+            <AmountGrid>
+              <div>
+                <AmountLabel>devUSDC.e</AmountLabel>
+                <AmountField
+                  inputMode="decimal"
+                  value={amountUSDC}
+                  onChange={(event) => setAmountUSDC(event.target.value)}
+                  placeholder="USDC amount"
+                />
+              </div>
+              <div>
+                <AmountLabel>TCRO</AmountLabel>
+                <AmountField
+                  inputMode="decimal"
+                  value="0"
+                  onChange={() => setAmountTCRO('0')}
+                  placeholder="TCRO disabled (MVP)"
+                  disabled
+                />
+              </div>
+            </AmountGrid>
+          </PanelSection>
 
           <ButtonRow>
             <PrimaryButton
@@ -205,63 +233,70 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
               )
             )}
           </Steps>
-
-          <ResultCard>
-            <ResultLabel>Latest Payload</ResultLabel>
-            <DataViewer data={data} />
-            <MetaRow>
-              <MetaItem>
-                <MetaKey>Pair</MetaKey>
-                <MetaValue>{payload?.pair ?? pair}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Fair Price</MetaKey>
-                <MetaValue>{payload?.fairPrice ?? '--'}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Confidence</MetaKey>
-                <MetaValue>{payload?.confidenceScore ?? '--'}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Max Size</MetaKey>
-                <MetaValue>{payload?.maxSafeExecutionSize ?? '--'}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Flags</MetaKey>
-                <MetaValue>{payload?.flags ?? '--'}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>SEDA</MetaKey>
-                {payload?.sedaExplorerUrl ? (
-                  <MetaLink href={payload.sedaExplorerUrl} target="_blank" rel="noreferrer">
-                    View consensus
-                  </MetaLink>
-                ) : (
-                  <MetaValue>--</MetaValue>
-                )}
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Cronos Tx</MetaKey>
-                {cronosLink ? (
-                  <MetaLink href={cronosLink} target="_blank" rel="noreferrer">
-                    {payload?.cronosTxHash}
-                  </MetaLink>
-                ) : (
-                  <MetaValue>--</MetaValue>
-                )}
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>Fee (USDC)</MetaKey>
-                <MetaValue>{feeLabel}</MetaValue>
-              </MetaItem>
-              <MetaItem>
-                <MetaKey>paymentId</MetaKey>
-                <MetaValue>{paymentId || '--'}</MetaValue>
-              </MetaItem>
-            </MetaRow>
-          </ResultCard>
         </Panel>
       </ContentGrid>
+
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryLabel>Pair</SummaryLabel>
+          <SummaryValue>{payload?.pair ?? pair}</SummaryValue>
+          <SummaryMeta>Active market</SummaryMeta>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>Fair Price</SummaryLabel>
+          <SummaryValue>{payload?.fairPrice ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {payload?.fairPriceScaled ?? '--'}</SummaryMeta>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>Confidence</SummaryLabel>
+          <SummaryValue>{payload?.confidenceScore ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {payload?.confidenceScoreScaled ?? '--'}</SummaryMeta>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>Max Size</SummaryLabel>
+          <SummaryValue>{payload?.maxSafeExecutionSize ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {payload?.maxSafeExecutionSizeScaled ?? '--'}</SummaryMeta>
+        </SummaryCard>
+      </SummaryGrid>
+
+      <ResultCard>
+        <ResultLabel>Latest Payload</ResultLabel>
+        <DataViewer data={data} />
+        <MetaGrid>
+          <MetaItem>
+            <MetaKey>Flags</MetaKey>
+            <MetaValue>{payload?.flags ?? '--'}</MetaValue>
+          </MetaItem>
+          <MetaItem>
+            <MetaKey>SEDA</MetaKey>
+            {payload?.sedaExplorerUrl ? (
+              <MetaLink href={payload.sedaExplorerUrl} target="_blank" rel="noreferrer">
+                View consensus
+              </MetaLink>
+            ) : (
+              <MetaValue>--</MetaValue>
+            )}
+          </MetaItem>
+          <MetaItem>
+            <MetaKey>Cronos Tx</MetaKey>
+            {cronosLink ? (
+              <MetaLink href={cronosLink} target="_blank" rel="noreferrer">
+                {payload?.cronosTxHash}
+              </MetaLink>
+            ) : (
+              <MetaValue>--</MetaValue>
+            )}
+          </MetaItem>
+          <MetaItem>
+            <MetaKey>Fee (USDC)</MetaKey>
+            <MetaValue>{feeLabel}</MetaValue>
+          </MetaItem>
+          <MetaItem>
+            <MetaKey>paymentId</MetaKey>
+            <MetaValue>{paymentId || '--'}</MetaValue>
+          </MetaItem>
+        </MetaGrid>
+      </ResultCard>
     </StyledContainer>
   );
 }

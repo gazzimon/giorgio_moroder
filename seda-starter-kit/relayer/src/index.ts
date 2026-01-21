@@ -34,6 +34,16 @@ type RelayerState = {
       drBlockHeight?: number;
       txHash?: string;
       updatedAt?: string;
+      values?: {
+        fairPriceScaled: string;
+        fairPrice: string;
+        confidenceScoreScaled: string;
+        confidenceScore: string;
+        maxSafeExecutionSizeScaled: string;
+        maxSafeExecutionSize: string;
+        flags: string;
+        decimals: number;
+      };
     }
   >;
 };
@@ -124,6 +134,13 @@ function decodeResultArray(resultHex: string, coder: ethers.AbiCoder): bigint[] 
     throw new Error(`Expected 4 values, got ${values.length}`);
   }
   return values;
+}
+
+function formatScaled(value: bigint, decimals: number): string {
+  const base = BigInt(10) ** BigInt(decimals);
+  const integer = value / base;
+  const fraction = (value % base).toString().padStart(decimals, '0');
+  return `${integer.toString()}.${fraction}`;
 }
 
 function normalizeResult(result: string): string {
@@ -223,6 +240,8 @@ async function main() {
 
     const resultHex = normalizeResult(result);
     const values = decodeResultArray(resultHex, coder);
+    const decimals = 6;
+    const [fairPrice, confidence, maxSize, flags] = values;
     console.log(`Relaying ${pair} (${requestId}) = [${values.join(', ')}]`);
 
     const requestIdHex = normalizeHex(requestId);
@@ -239,6 +258,16 @@ async function main() {
       drBlockHeight,
       txHash: tx.hash,
       updatedAt: new Date().toISOString(),
+      values: {
+        fairPriceScaled: fairPrice.toString(),
+        fairPrice: formatScaled(fairPrice, decimals),
+        confidenceScoreScaled: confidence.toString(),
+        confidenceScore: formatScaled(confidence, decimals),
+        maxSafeExecutionSizeScaled: maxSize.toString(),
+        maxSafeExecutionSize: formatScaled(maxSize, decimals),
+        flags: flags.toString(),
+        decimals,
+      },
     };
     saveState(state);
     return true;
