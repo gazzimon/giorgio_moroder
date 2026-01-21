@@ -182,7 +182,7 @@ export interface RequireX402Options {
   asset: Contract;
 
   /** Maximum amount required (recommended to use base units). */
-  maxAmountRequired: string;
+  maxAmountRequired: string | ((req: Request) => string);
 
   /** Optional fee amount in base units (devUSDC.e, 6 decimals). */
   feeBaseUnits?: string;

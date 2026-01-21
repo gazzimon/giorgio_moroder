@@ -10,6 +10,17 @@ const RESOURCE = process.env.PUBLIC_RESOURCE_URL ?? 'http://localhost:8787/api/d
 const PRICE = process.env.PRICE_BASE_UNITS ?? '1000000';
 const FEE = process.env.FEE_BASE_UNITS ?? '0';
 
+const parseAmountParam = (req: Request): string => {
+  const raw = String(req.query.amountUSDC ?? '').trim();
+  if (!/^\d+$/.test(raw)) return PRICE;
+  try {
+    if (BigInt(raw) <= 0n) return PRICE;
+  } catch {
+    return PRICE;
+  }
+  return raw;
+};
+
 /**
  * Creates an Express middleware that enforces X402 payment for a protected resource.
  *
@@ -37,7 +48,7 @@ export const requirePaidAccess = (opts?: { description?: string }) => {
     network: NETWORK,
     payTo: PAY_TO,
     asset: ASSET,
-    maxAmountRequired: PRICE,
+    maxAmountRequired: (req: Request) => parseAmountParam(req),
     feeBaseUnits: FEE,
     description: (req: Request) => {
       const pair = String(req.query.pair ?? '').trim().toUpperCase();

@@ -2,6 +2,7 @@ import 'dotenv/config';
 import fs from 'node:fs';
 import path from 'node:path';
 import express from 'express';
+import { spawn } from 'node:child_process';
 import { ethers } from 'ethers';
 
 type PayResult = {
@@ -27,10 +28,16 @@ const STALE_SECONDS = process.env.STALE_SECONDS ? Number.parseInt(process.env.ST
 const PROCESSED_LOG_PATH =
   process.env.PROCESSED_LOG_PATH ?? path.resolve(process.cwd(), 'processed.jsonl');
 const PORT = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 8788;
+const RELAYER_CWD =
+  process.env.RELAYER_CWD ?? path.resolve(process.cwd(), '..', 'seda-starter-kit');
+const RELAYER_COMMAND = process.env.RELAYER_COMMAND ?? 'bun';
+const RELAYER_SCRIPT = process.env.RELAYER_SCRIPT ?? './scripts/post-dr-and-relay.ts';
 
 const USDC_DECIMALS = 6n;
 const TCRO_DECIMALS = 18n;
-const CONFIDENCE_MIN = 950_000n;
+const CONFIDENCE_MIN = process.env.CONFIDENCE_MIN
+  ? BigInt(process.env.CONFIDENCE_MIN)
+  : 950_000n;
 const TRANSFER_TOPIC = ethers.id('Transfer(address,address,uint256)');
 
 const consumerAbi = [
@@ -84,12 +91,11 @@ function normalizePair(pair: string): string {
   return pair.trim().toUpperCase();
 }
 
-function readPayerFromTransfer(
+function readTransferToTreasury(
   receipt: ethers.TransactionReceipt,
-  amountUSDC: bigint,
   tokenAddress: string,
   treasuryAddress: string,
-): string | null {
+): { payer: string; value: bigint } | null {
   const token = tokenAddress.toLowerCase();
   const treasury = treasuryAddress.toLowerCase();
   for (const log of receipt.logs) {
@@ -99,11 +105,29 @@ function readPayerFromTransfer(
     const from = ethers.getAddress(`0x${log.topics[1].slice(26)}`);
     const to = ethers.getAddress(`0x${log.topics[2].slice(26)}`);
     if (to.toLowerCase() !== treasury) continue;
-    const value = BigInt(log.data);
-    if (value !== amountUSDC) continue;
-    return from;
+    return { payer: from, value: BigInt(log.data) };
   }
   return null;
+}
+
+async function runPostDrRelay(pair: string): Promise<void> {
+  const execInputs = JSON.stringify({ pair });
+  const child = spawn(RELAYER_COMMAND, ['run', RELAYER_SCRIPT], {
+    cwd: RELAYER_CWD,
+    stdio: 'inherit',
+    env: { ...process.env, EXEC_INPUTS: execInputs },
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    child.on('error', reject);
+    child.on('exit', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`post-dr-and-relay exited with code ${code}`));
+      }
+    });
+  });
 }
 
 async function main() {
@@ -141,12 +165,12 @@ async function main() {
         return res.status(400).json({ error: 'missing pair' });
       }
 
-      const amountUSDC = parseAmount(pay.amountUSDC, 'amountUSDC');
+      const amountUSDCInput = parseAmount(pay.amountUSDC, 'amountUSDC');
       const amountTCRO = parseAmount(pay.amountTCRO, 'amountTCRO');
       const feeUSDC = parseAmount(pay.feeUSDC, 'feeUSDC');
 
-      if (amountUSDC <= 0n) {
-        return res.status(400).json({ error: 'amountUSDC must be > 0' });
+      if (amountTCRO > 0n) {
+        return res.status(400).json({ error: 'amountTCRO not supported' });
       }
 
       const key = pay.paymentTx.toLowerCase();
@@ -158,25 +182,33 @@ async function main() {
       if (!receipt || receipt.status !== 1) {
         return res.status(400).json({ error: 'paymentTx not confirmed' });
       }
-      const payerFromTransfer = readPayerFromTransfer(
-        receipt,
-        amountUSDC,
-        USDC_ADDRESS,
-        TREASURY_ADDRESS,
-      );
-      if (!payerFromTransfer) {
+      const transfer = readTransferToTreasury(receipt, USDC_ADDRESS, TREASURY_ADDRESS);
+      if (!transfer) {
         return res.status(400).json({ error: 'paymentTx missing USDC transfer' });
       }
       if (pay.payer && ethers.isAddress(pay.payer)) {
-        if (pay.payer.toLowerCase() !== payerFromTransfer.toLowerCase()) {
+        if (pay.payer.toLowerCase() !== transfer.payer.toLowerCase()) {
           return res.status(400).json({ error: 'paymentTx payer mismatch' });
         }
       }
-      const payer = payerFromTransfer;
+      const payer = transfer.payer;
+      if (amountUSDCInput > 0n && transfer.value !== amountUSDCInput) {
+        return res.status(400).json({ error: 'paymentTx amount mismatch' });
+      }
+      const amountUSDC = amountUSDCInput > 0n ? amountUSDCInput : transfer.value;
+      if (amountUSDC <= 0n) {
+        return res.status(400).json({ error: 'amountUSDC must be > 0' });
+      }
 
       const pairHash = ethers.keccak256(ethers.toUtf8Bytes(pair));
-      const [values, requestId, updatedAt, seq] = await consumer.getLatestWithMeta(pairHash);
-      const isStale = await consumer.isStale(pairHash);
+      let [values, requestId, updatedAt, seq] = await consumer.getLatestWithMeta(pairHash);
+      let isStale = await consumer.isStale(pairHash);
+
+      if (isStale) {
+        await runPostDrRelay(pair);
+        [values, requestId, updatedAt, seq] = await consumer.getLatestWithMeta(pairHash);
+        isStale = await consumer.isStale(pairHash);
+      }
 
       if (isStale) {
         return res.status(400).json({ error: 'oracle stale' });

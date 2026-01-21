@@ -50,6 +50,16 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
   const [amountUSDC, setAmountUSDC] = useState<string>('0');
   const [amountTCRO, setAmountTCRO] = useState<string>('0');
 
+  const toBaseUnits = (value: string, decimals: number): string => {
+    const trimmed = value.trim();
+    if (!trimmed) return '0';
+    if (!/^\d+(\.\d+)?$/.test(trimmed)) return '0';
+    const [wholeRaw, fracRaw = ''] = trimmed.split('.');
+    const whole = wholeRaw.replace(/^0+/, '') || '0';
+    const frac = fracRaw.slice(0, decimals).padEnd(decimals, '0');
+    return `${whole}${frac}`.replace(/^0+/, '') || '0';
+  };
+
   const payload = useMemo(() => {
     if (!data) return null;
     try {
@@ -154,23 +164,29 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
                 inputMode="decimal"
                 value={amountUSDC}
                 onChange={(event) => setAmountUSDC(event.target.value)}
-                placeholder="USDC amount (6 decimals)"
+                placeholder="USDC amount"
               />
             </div>
             <div>
               <AmountLabel>TCRO</AmountLabel>
               <AmountField
                 inputMode="decimal"
-                value={amountTCRO}
-                onChange={(event) => setAmountTCRO(event.target.value)}
-                placeholder="TCRO amount (18 decimals)"
+                value="0"
+                onChange={() => setAmountTCRO('0')}
+                placeholder="TCRO disabled (MVP)"
+                disabled
               />
             </div>
           </AmountGrid>
 
           <ButtonRow>
             <PrimaryButton
-              onClick={() => void fetchSecret(pair, undefined, { amountUSDC, amountTCRO })}
+              onClick={() =>
+                void fetchSecret(pair, undefined, {
+                  amountUSDC: toBaseUnits(amountUSDC, 6),
+                  amountTCRO: '0',
+                })
+              }
               disabled={isBusy}
             >
               {isBusy ? 'Working...' : 'Fetch Price'}

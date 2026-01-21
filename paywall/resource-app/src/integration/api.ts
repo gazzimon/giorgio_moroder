@@ -32,7 +32,11 @@ export interface ApiClient {
    * @param paymentId - Optional previously-settled payment id to present for entitlement.
    * @returns A discriminated union describing success, payment challenge, or error.
    */
-  getData(pair: string, paymentId?: string): Promise<GetDataResult>;
+  getData(
+    pair: string,
+    paymentId?: string,
+    amounts?: { amountUSDC?: string; amountTCRO?: string }
+  ): Promise<GetDataResult>;
 
   /**
    * Submits a signed payment for verification and settlement.
@@ -66,8 +70,15 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
      * - `kind: "payment_required"` when a payment challenge is returned (HTTP 402)
      * - `kind: "error"` for all other responses
      */
-    async getData(pair: string, paymentId?: string): Promise<GetDataResult> {
-      const search = new URLSearchParams({ pair }).toString();
+    async getData(
+      pair: string,
+      paymentId?: string,
+      amounts?: { amountUSDC?: string; amountTCRO?: string }
+    ): Promise<GetDataResult> {
+      const params = new URLSearchParams({ pair });
+      if (amounts?.amountUSDC) params.set('amountUSDC', amounts.amountUSDC);
+      if (amounts?.amountTCRO) params.set('amountTCRO', amounts.amountTCRO);
+      const search = params.toString();
       const res = await fetch(`${apiBase}/api/data?${search}`, {
         headers: paymentId ? { 'x-payment-id': paymentId } : {},
       });

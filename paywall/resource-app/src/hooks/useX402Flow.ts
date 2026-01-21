@@ -221,7 +221,7 @@ export function useX402Flow(options: UseX402FlowOptions): UseX402FlowResult {
         const maxRetries = 4;
         let attempt = 0;
         while (attempt <= maxRetries) {
-        const result = await api.getData(pair, existingPaymentId);
+          const result = await api.getData(pair, existingPaymentId, amounts);
 
           if (result.kind === 'ok') {
             const payloadPair =

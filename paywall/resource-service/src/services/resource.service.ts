@@ -16,6 +16,7 @@ const SEDA_STARTER_KIT_PATH =
   process.env.SEDA_STARTER_KIT_PATH ?? path.resolve(process.cwd(), '../../seda-starter-kit');
 const PAYMENT_LOG_PATH =
   process.env.PAYMENT_LOG_PATH ?? path.resolve(process.cwd(), 'payment-processed.jsonl');
+const SYNTHETICER_URL = process.env.SYNTHETICER_URL ?? '';
 
 const consumerAbi = [
   'function getLatest(bytes32) view returns (int256[4])',
@@ -76,6 +77,26 @@ function runPostDrRelay(pair: string): Promise<void> {
       else reject(new Error(`post-dr-relay failed with exit code ${code ?? 'unknown'}`));
     });
   });
+}
+
+async function triggerSyntheticer(payload: Record<string, unknown>): Promise<void> {
+  if (!SYNTHETICER_URL) return;
+  try {
+    const res = await fetch(SYNTHETICER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ payResult: payload }),
+    });
+    if (!res.ok) {
+      const body = await res.text();
+      console.warn('[x402] syntheticer rejected', { status: res.status, body });
+    } else {
+      const body = await res.json().catch(() => ({}));
+      console.info('[x402] syntheticer ok', body);
+    }
+  } catch (error) {
+    console.warn('[x402] syntheticer request failed', error);
+  }
 }
 
 function formatScaled(value: bigint, decimals: number): string {
@@ -207,22 +228,28 @@ export class ResourceService {
       pair,
     });
     console.info('[x402] settlePayment result', { ok: result.ok, paymentId: params.paymentId });
-    if (result.ok) {
-      console.info('[x402] derived pair', { pair });
-      appendPaymentLog({
-        paymentId: params.paymentId,
-        paymentTx: result.txHash ?? null,
-        payer: result.payer ?? null,
-        amountUSDC: result.amountUSDC ?? null,
-        amountTCRO: result.amountTCRO ?? null,
-        feeUSDC: result.feeUSDC ?? null,
-        pair: result.pair ?? pair ?? null,
-        at: new Date().toISOString(),
-      });
-      if (pair) {
-        await runPostDrRelay(pair);
+      if (result.ok) {
+        console.info('[x402] derived pair', { pair });
+        const payResult = {
+          paymentId: params.paymentId,
+          paymentTx: result.txHash ?? null,
+          payer: result.payer ?? null,
+          amountUSDC: result.amountUSDC ?? null,
+          amountTCRO: result.amountTCRO ?? null,
+          feeUSDC: result.feeUSDC ?? null,
+          pair: result.pair ?? pair ?? null,
+          at: new Date().toISOString(),
+        };
+        appendPaymentLog(payResult);
+        if (pair) {
+          await runPostDrRelay(pair);
+        }
+        if (payResult.paymentTx) {
+          await triggerSyntheticer(payResult);
+        } else {
+          console.warn('[x402] syntheticer skipped (missing paymentTx)');
+        }
       }
-    }
     return result;
   }
 }

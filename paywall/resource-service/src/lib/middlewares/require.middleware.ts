@@ -71,13 +71,15 @@ export const requireX402Payment = (options: RequireX402Options) => {
 
     const resolvedResource = typeof resource === 'function' ? resource(req) : resource;
     const resolvedDescription = typeof description === 'function' ? description(req) : description;
+    const resolvedMaxAmountRequired =
+      typeof maxAmountRequired === 'function' ? maxAmountRequired(req) : maxAmountRequired;
 
     const accepts: Accepts = {
       scheme: 'exact',
       network,
       asset,
       payTo,
-      maxAmountRequired,
+      maxAmountRequired: resolvedMaxAmountRequired,
       maxTimeoutSeconds,
       description: resolvedDescription,
       mimeType,

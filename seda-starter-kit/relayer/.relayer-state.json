@@ -26,7 +26,15 @@
     "61858621fafbc18c90d5a9cf67a36fb9b8b7ca8c026493478766052ffde83883": true,
     "190d925a3ae54ea30e2fa2ded2b961cc9d14deb3df1bb0d369fbd8859115fe6e": true,
     "e940299b237794969a20f27774713c08815ddc45afc35cd84eb5f2d4d8f8f6cd": true,
-    "daa935c7d1bcf564e04b4fa3e8ecb3c2481915abb263394373d1b09c5afc471b": true
+    "daa935c7d1bcf564e04b4fa3e8ecb3c2481915abb263394373d1b09c5afc471b": true,
+    "5096369dc4ce653fe8c82981c28c97914a42a7fe27a2afc700679cbbbbaf04d5": true,
+    "020d425e1f52bf61e4a7e15a4fea87487115acc476583d87f6cd326aed7a87bd": true,
+    "02316947c867cb31b6253f4f5aa2f9ed33b6ed680c84a1db5184b46c128034a5": true,
+    "e3fe25feb27eded226a98b9e006641ab4878c710ec187c5260267a1c9e5eb47b": true,
+    "ecd0ce364f09e0a09fe7250600648d86fbf31f7b3d80461af05c5b2fc3c389f9": true,
+    "9c6d57a9aebb39f3113d057b60e5ac689495710dad6b97bc0b81ccae9a11e9b6": true,
+    "2f3485603f308514e8711785c4c751a72276dc69ebfb88b2af402c07c2a5689a": true,
+    "996759f7327d35eaf728f22dbc7fe76af150ca26ece0c6367368f0c5fcc1fd08": true
   },
   "lastByPair": {
     "USDT-USDC": {
@@ -36,10 +44,10 @@
       "updatedAt": "2026-01-15T02:53:12.266Z"
     },
     "WCRO-USDC": {
-      "requestId": "daa935c7d1bcf564e04b4fa3e8ecb3c2481915abb263394373d1b09c5afc471b",
-      "drBlockHeight": 7342515,
-      "txHash": "0x20fe2b57a54691660e1b31f2b4262121ce8f9b4fe60a800d0bc3b7d293c3ae2a",
-      "updatedAt": "2026-01-21T13:45:02.426Z"
+      "requestId": "996759f7327d35eaf728f22dbc7fe76af150ca26ece0c6367368f0c5fcc1fd08",
+      "drBlockHeight": 7344763,
+      "txHash": "0x5595265513f6f894e582db9c409cc6f24ea4a2454c0fea8b121159c2fe101f5b",
+      "updatedAt": "2026-01-21T18:49:41.900Z"
     },
     "WCRO-ETH": {
       "requestId": "0be3dedd793946c1039fe00531dcd6b5fe89f1f015b0eb9fa3cc8b9b9b4e4a9b",
