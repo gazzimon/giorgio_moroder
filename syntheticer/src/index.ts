@@ -21,6 +21,8 @@ const CRONOS_RPC_URL = process.env.CRONOS_RPC_URL ?? '';
 const RELAYER_PRIVATE_KEY = process.env.RELAYER_PRIVATE_KEY ?? '';
 const USX402_ADDRESS = process.env.USX402_ADDRESS ?? '';
 const SEDA_ORACLE_CONSUMER_ADDRESS = process.env.SEDA_ORACLE_CONSUMER_ADDRESS ?? '';
+const USDC_ADDRESS = process.env.USDC_ADDRESS ?? '';
+const TREASURY_ADDRESS = process.env.TREASURY_ADDRESS ?? '';
 const STALE_SECONDS = process.env.STALE_SECONDS ? Number.parseInt(process.env.STALE_SECONDS, 10) : 0;
 const PROCESSED_LOG_PATH =
   process.env.PROCESSED_LOG_PATH ?? path.resolve(process.cwd(), 'processed.jsonl');
@@ -29,6 +31,7 @@ const PORT = process.env.PORT ? Number.parseInt(process.env.PORT, 10) : 8788;
 const USDC_DECIMALS = 6n;
 const TCRO_DECIMALS = 18n;
 const CONFIDENCE_MIN = 950_000n;
+const TRANSFER_TOPIC = ethers.id('Transfer(address,address,uint256)');
 
 const consumerAbi = [
   'function getLatest(bytes32 pair) view returns (int256[4])',
@@ -81,11 +84,35 @@ function normalizePair(pair: string): string {
   return pair.trim().toUpperCase();
 }
 
+function readPayerFromTransfer(
+  receipt: ethers.TransactionReceipt,
+  amountUSDC: bigint,
+  tokenAddress: string,
+  treasuryAddress: string,
+): string | null {
+  const token = tokenAddress.toLowerCase();
+  const treasury = treasuryAddress.toLowerCase();
+  for (const log of receipt.logs) {
+    if (log.address.toLowerCase() !== token) continue;
+    if (!log.topics || log.topics.length < 3) continue;
+    if (log.topics[0] !== TRANSFER_TOPIC) continue;
+    const from = ethers.getAddress(`0x${log.topics[1].slice(26)}`);
+    const to = ethers.getAddress(`0x${log.topics[2].slice(26)}`);
+    if (to.toLowerCase() !== treasury) continue;
+    const value = BigInt(log.data);
+    if (value !== amountUSDC) continue;
+    return from;
+  }
+  return null;
+}
+
 async function main() {
   requireEnv(CRONOS_RPC_URL, 'CRONOS_RPC_URL');
   requireEnv(RELAYER_PRIVATE_KEY, 'RELAYER_PRIVATE_KEY');
   requireEnv(USX402_ADDRESS, 'USX402_ADDRESS');
   requireEnv(SEDA_ORACLE_CONSUMER_ADDRESS, 'SEDA_ORACLE_CONSUMER_ADDRESS');
+  requireEnv(USDC_ADDRESS, 'USDC_ADDRESS');
+  requireEnv(TREASURY_ADDRESS, 'TREASURY_ADDRESS');
 
   const provider = new ethers.JsonRpcProvider(CRONOS_RPC_URL);
   const wallet = new ethers.Wallet(RELAYER_PRIVATE_KEY, provider);
@@ -109,11 +136,6 @@ async function main() {
         return res.status(400).json({ error: 'invalid paymentTx' });
       }
 
-      const payer = pay.payer;
-      if (!payer || !ethers.isAddress(payer) || payer === ethers.ZeroAddress) {
-        return res.status(400).json({ error: 'invalid payer' });
-      }
-
       const pair = normalizePair(pay.pair ?? '');
       if (!pair) {
         return res.status(400).json({ error: 'missing pair' });
@@ -122,6 +144,10 @@ async function main() {
       const amountUSDC = parseAmount(pay.amountUSDC, 'amountUSDC');
       const amountTCRO = parseAmount(pay.amountTCRO, 'amountTCRO');
       const feeUSDC = parseAmount(pay.feeUSDC, 'feeUSDC');
+
+      if (amountUSDC <= 0n) {
+        return res.status(400).json({ error: 'amountUSDC must be > 0' });
+      }
 
       const key = pay.paymentTx.toLowerCase();
       if (processed.has(key)) {
@@ -132,9 +158,21 @@ async function main() {
       if (!receipt || receipt.status !== 1) {
         return res.status(400).json({ error: 'paymentTx not confirmed' });
       }
-      if (receipt.from.toLowerCase() !== payer.toLowerCase()) {
-        return res.status(400).json({ error: 'paymentTx payer mismatch' });
+      const payerFromTransfer = readPayerFromTransfer(
+        receipt,
+        amountUSDC,
+        USDC_ADDRESS,
+        TREASURY_ADDRESS,
+      );
+      if (!payerFromTransfer) {
+        return res.status(400).json({ error: 'paymentTx missing USDC transfer' });
       }
+      if (pay.payer && ethers.isAddress(pay.payer)) {
+        if (pay.payer.toLowerCase() !== payerFromTransfer.toLowerCase()) {
+          return res.status(400).json({ error: 'paymentTx payer mismatch' });
+        }
+      }
+      const payer = payerFromTransfer;
 
       const pairHash = ethers.keccak256(ethers.toUtf8Bytes(pair));
       const [values, requestId, updatedAt, seq] = await consumer.getLatestWithMeta(pairHash);

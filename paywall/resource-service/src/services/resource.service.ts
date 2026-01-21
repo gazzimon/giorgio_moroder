@@ -14,6 +14,8 @@ const RELAYER_STATE_PATH =
   path.resolve(process.cwd(), '../../seda-starter-kit/relayer/.relayer-state.json');
 const SEDA_STARTER_KIT_PATH =
   process.env.SEDA_STARTER_KIT_PATH ?? path.resolve(process.cwd(), '../../seda-starter-kit');
+const PAYMENT_LOG_PATH =
+  process.env.PAYMENT_LOG_PATH ?? path.resolve(process.cwd(), 'payment-processed.jsonl');
 
 const consumerAbi = [
   'function getLatest(bytes32) view returns (int256[4])',
@@ -207,6 +209,16 @@ export class ResourceService {
     console.info('[x402] settlePayment result', { ok: result.ok, paymentId: params.paymentId });
     if (result.ok) {
       console.info('[x402] derived pair', { pair });
+      appendPaymentLog({
+        paymentId: params.paymentId,
+        paymentTx: result.txHash ?? null,
+        payer: result.payer ?? null,
+        amountUSDC: result.amountUSDC ?? null,
+        amountTCRO: result.amountTCRO ?? null,
+        feeUSDC: result.feeUSDC ?? null,
+        pair: result.pair ?? pair ?? null,
+        at: new Date().toISOString(),
+      });
       if (pair) {
         await runPostDrRelay(pair);
       }
@@ -224,4 +236,12 @@ function extractFeeUSDC(paymentRequirements: PaymentRequirements): string | unde
   if (!extra || typeof extra !== 'object') return undefined;
   const value = extra.feeUSDC;
   return typeof value === 'string' ? value : undefined;
+}
+
+function appendPaymentLog(record: Record<string, unknown>) {
+  try {
+    fs.appendFileSync(PAYMENT_LOG_PATH, `${JSON.stringify(record)}\n`);
+  } catch (error) {
+    console.warn('[x402] payment log append failed', error);
+  }
 }
