@@ -152,7 +152,15 @@ export interface PaidRecord {
  * - On failure, `ok: false` includes a stable error code and SDK response details.
  */
 export type PayResult =
-  | { ok: true; txHash?: string; payer?: string; amountUSDC?: string; amountTCRO?: string }
+  | {
+      ok: true;
+      txHash?: string;
+      payer?: string;
+      amountUSDC?: string;
+      amountTCRO?: string;
+      feeUSDC?: string;
+      pair?: string | null;
+    }
   | { ok: false; error: 'verify_failed'; details: X402VerifyResponse }
   | { ok: false; error: 'settle_failed'; details: X402SettleResponse };
 

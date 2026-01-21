@@ -192,6 +192,8 @@ export class ResourceService {
       amountUSDC: params.amountUSDC,
       amountTCRO: params.amountTCRO,
     });
+    const pair = extractPairFromRequirements(params.paymentRequirements);
+    const feeUSDC = extractFeeUSDC(params.paymentRequirements);
     const result = await handleX402Payment({
       facilitator: this.facilitator,
       paymentId: params.paymentId,
@@ -199,10 +201,11 @@ export class ResourceService {
       paymentRequirements: params.paymentRequirements,
       amountUSDC: params.amountUSDC,
       amountTCRO: params.amountTCRO,
+      feeUSDC,
+      pair,
     });
     console.info('[x402] settlePayment result', { ok: result.ok, paymentId: params.paymentId });
     if (result.ok) {
-      const pair = extractPairFromRequirements(params.paymentRequirements);
       console.info('[x402] derived pair', { pair });
       if (pair) {
         await runPostDrRelay(pair);
@@ -214,4 +217,11 @@ export class ResourceService {
 
 function stripHexPrefix(value: string): string {
   return value.startsWith('0x') ? value.slice(2) : value;
+}
+
+function extractFeeUSDC(paymentRequirements: PaymentRequirements): string | undefined {
+  const extra = (paymentRequirements as { extra?: Record<string, unknown> }).extra;
+  if (!extra || typeof extra !== 'object') return undefined;
+  const value = extra.feeUSDC;
+  return typeof value === 'string' ? value : undefined;
 }

@@ -119,8 +119,10 @@ export async function handleX402Payment(params: {
   paymentRequirements: VerifyRequest['paymentRequirements'];
   amountUSDC?: string;
   amountTCRO?: string;
+  feeUSDC?: string;
+  pair?: string | null;
 }): Promise<PayResult> {
-  const { facilitator, paymentId, paymentHeader, paymentRequirements, amountUSDC, amountTCRO } = params;
+  const { facilitator, paymentId, paymentHeader, paymentRequirements, amountUSDC, amountTCRO, feeUSDC, pair } = params;
 
   const body: VerifyRequest = {
     x402Version: 1,
@@ -154,6 +156,8 @@ export async function handleX402Payment(params: {
     payer,
     amountUSDC,
     amountTCRO,
+    feeUSDC,
+    pair,
   };
 }
 
