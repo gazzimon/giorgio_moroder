@@ -605,6 +605,51 @@ class CapitalDiagramAnimation {
 }
 
 // ========================================
+// 13. Hero Video Playlist
+// ========================================
+class HeroVideoPlaylist {
+    constructor() {
+        this.video = document.getElementById('hero-video');
+        this.sources = [
+            'video/01.mp4',
+            'video/02.mp4',
+            'video/03.mp4',
+            'video/04.mp4'
+        ];
+        this.currentIndex = 0;
+        this.init();
+    }
+
+    init() {
+        if (!this.video) return;
+
+        this.video.muted = true;
+        this.video.playsInline = true;
+        this.video.autoplay = true;
+        this.video.loop = false;
+        this.video.preload = 'auto';
+
+        this.video.addEventListener('ended', () => this.nextVideo());
+        this.loadVideo(this.currentIndex);
+    }
+
+    loadVideo(index) {
+        this.video.src = this.sources[index];
+        const playPromise = this.video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {
+                // Autoplay can be blocked; keep silent until user interaction.
+            });
+        }
+    }
+
+    nextVideo() {
+        this.currentIndex = (this.currentIndex + 1) % this.sources.length;
+        this.loadVideo(this.currentIndex);
+    }
+}
+
+// ========================================
 // Main Initialization
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -621,6 +666,7 @@ document.addEventListener('DOMContentLoaded', () => {
     new ScrollProgress();
     new SpecTableInteraction();
     new CapitalDiagramAnimation();
+    new HeroVideoPlaylist();
 
     // Add loaded class to body for CSS animations
     document.body.classList.add('loaded');

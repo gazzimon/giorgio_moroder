@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "x402-oracle-landing/build",
+    "public": "giorgio-moroder-landing/build",
     "ignore": [
       "firebase.json",
       "**/.*",

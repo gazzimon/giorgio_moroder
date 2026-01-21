@@ -17,17 +17,7 @@
     <nav class="navbar" id="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                    <circle cx="16" cy="16" r="14" stroke="url(#logo-gradient)" stroke-width="2"/>
-                    <path d="M16 8L16 16L22 22" stroke="url(#logo-gradient)" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="16" cy="16" r="3" fill="url(#logo-gradient)"/>
-                    <defs>
-                        <linearGradient id="logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#00ff9d"/>
-                            <stop offset="100%" stop-color="#3b82f6"/>
-                        </linearGradient>
-                    </defs>
-                </svg>
+                <img src="images/logo_transparent.png" alt="Giorgio Moroder logo">
                 <span>GIORGIO MORODER</span>
             </div>
             <ul class="nav-links">
@@ -38,8 +28,8 @@
                 <li><a href="#vision">Vision</a></li>
             </ul>
             <div class="nav-cta">
-                <a href="https://github.com" target="_blank" class="nav-link">GitHub</a>
-                <a href="#docs" class="btn btn-primary">Read Technical Spec</a>
+                <a href="https://github.com/gazzimon/giorgio_moroder" target="_blank" class="nav-link">GitHub</a>
+                <a href="https://github.com/gazzimon/x402-oracle" target="_blank" rel="noreferrer" class="btn btn-primary">Read Technical Spec</a>
             </div>
         </div>
     </nav>
@@ -50,11 +40,9 @@
             <div class="hero-badge">x402 Hackathon Submission</div>
             <h1 class="hero-title">
                 <span class="title-line">GIORGIO MORODER</span>
-                <span class="title-accent">Paid execution that mints LP-backed synthetic claims</span>
+                <span class="title-accent">Paid execution engine in which agents trigger decentralized oracle recomputation via x402 payments and SEDA, enabling deterministic issuance of USD-denominated synthetic claims backed by LP-managed capital on Cronos.</span>
             </h1>
-            <p class="hero-description">
-                GIORGIO MORODER is a paid execution engine in which agents trigger decentralized oracle recomputation via x402 payments and SEDA, enabling deterministic issuance of USD-denominated synthetic claims backed by LP-managed capital on Cronos.
-            </p>
+
             <div class="hero-ctas">
                 <a href="#flow" class="btn btn-primary btn-large">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -64,7 +52,7 @@
                     </svg>
                     View Architecture
                 </a>
-                <a href="#docs" class="btn btn-secondary btn-large">
+                <a href="https://github.com/gazzimon/x402-oracle" target="_blank" rel="noreferrer" class="btn btn-secondary btn-large">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
@@ -76,6 +64,9 @@
             </div>
         </div>
         <div class="hero-visual">
+            <div class="video-wall" aria-hidden="true">
+                <video id="hero-video" muted playsinline autoplay preload="auto"></video>
+            </div>
             <div class="hero-graphic">
                 <svg viewBox="0 0 400 300" class="oracle-diagram">
                     <!-- Central Node -->
@@ -117,29 +108,8 @@
             <span class="section-label">01 — System Flow</span>
             <h2 class="section-title">The Execution Pipeline</h2>
         </div>
-
         <div class="flow-banner">
-            <p>Users do not mint. Intelligence authorizes issuance.</p>
-        </div>
-
-        <div class="flow-simple">
-            <span class="flow-item">Pay</span>
-            <svg width="40" height="20" viewBox="0 0 40 20">
-                <path d="M0 10 L30 10 M25 5 L30 10 L25 15" stroke="#00ff9d" stroke-width="2" fill="none"/>
-            </svg>
-            <span class="flow-item">Recompute</span>
-            <svg width="40" height="20" viewBox="0 0 40 20">
-                <path d="M0 10 L30 10 M25 5 L30 10 L25 15" stroke="#00ff9d" stroke-width="2" fill="none"/>
-            </svg>
-            <span class="flow-item">Authorize</span>
-            <svg width="40" height="20" viewBox="0 0 40 20">
-                <path d="M0 10 L30 10 M25 5 L30 10 L25 15" stroke="#00ff9d" stroke-width="2" fill="none"/>
-            </svg>
-            <span class="flow-item">Issue</span>
-            <svg width="40" height="20" viewBox="0 0 40 20">
-                <path d="M0 10 L30 10 M25 5 L30 10 L25 15" stroke="#00ff9d" stroke-width="2" fill="none"/>
-            </svg>
-            <span class="flow-item">Manage</span>
+            <p>Paid execution that mints LP-backed synthetic claims</p>
         </div>
 
         <div class="flow-expanded">
@@ -169,7 +139,7 @@
                     <span class="step-number">02</span>
                     <h3>x402 Payment</h3>
                     <p>Gasless, pay-per-execution handled natively by x402 on Cronos.</p>
-                    <code>payment: x402微量</code>
+                    <code>payment: x402</code>
                 </div>
             </div>
 
@@ -214,7 +184,7 @@
                     <span class="step-number">05</span>
                     <h3>Claim Issuance</h3>
                     <p>USX402 synthetic claim is deterministically issued. Capital deployed when conditions allow.</p>
-                    <code>issue: USX402微量</code>
+                    <code>issue: USX402</code>
                 </div>
             </div>
         </div>
@@ -334,7 +304,10 @@
 
         <div class="capital-content">
             <div class="capital-description">
-                <p>USX402 represents a USD-denominated synthetic claim on capital managed under LP strategies. Claims are issued deterministically based on oracle authorization. Capital deployment is strategic and may be delayed.</p>
+<p>
+USX402 represents a redeemable synthetic claim on protocol-managed capital deployed under a WCRO/USDC LP strategy. 
+Burning USX402 triggers settlement in USDC, subject to the liquidity state and risk controls enforced by the Capital Engine.
+</p>
 
                 <h4>The protocol does not guarantee:</h4>
                 <ul class="guarantee-list negative">
@@ -473,8 +446,14 @@
             </div>
         </div>
 
-        <!-- Use Cases Grid -->
-        <h3 class="usecase-heading">Composable Intelligence for DeFi</h3>
+    </section>
+
+    <!-- Use Cases Grid -->
+    <section class="section usecases" id="usecases">
+        <div class="section-header">
+            <span class="section-label">Composable Intelligence for Real-World Applications</span>
+            <h2 class="section-title">Real-World Applications</h2>
+        </div>
         <div class="usecases-grid">
             <div class="usecase-card">
                 <div class="usecase-icon">
@@ -484,10 +463,10 @@
                         <path d="M2 12l10 5 10-5"/>
                     </svg>
                 </div>
-                <h4>DeFi Automation</h4>
-                <p>Trading agents on VVS Finance executing with real-time risk assessment.</p>
+                <h3>Blocksize-bidask</h3>
+                <p>x402 Cronos-SEDA consensus for blocksize and bid/ask signals.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/blob/main/seda-example-ops/examples/blocksize-bidask/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
-
             <div class="usecase-card">
                 <div class="usecase-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -495,20 +474,20 @@
                         <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
                     </svg>
                 </div>
-                <h4>LP Fair Pricing</h4>
-                <p>Pool health monitoring and manipulation resistance for liquidity providers.</p>
+                <h3>Caplight-eod-market-price</h3>
+                <p>x402 Cronos-SEDA consensus for end-of-day market pricing.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/tree/main/seda-example-ops/examples/caplight-eod-market-price/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
-
             <div class="usecase-card">
                 <div class="usecase-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"/>
                     </svg>
                 </div>
-                <h4>Bridges</h4>
-                <p>Execution gating by risk signals. Prevent cross-chain attacks with on-chain validation.</p>
+                <h3>Commodity-price</h3>
+                <p>x402 Cronos-SEDA consensus for single commodity pricing.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/tree/main/seda-example-ops/examples/single-commodity-price/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
-
             <div class="usecase-card">
                 <div class="usecase-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -517,29 +496,34 @@
                         <line x1="12" y1="17" x2="12" y2="21"/>
                     </svg>
                 </div>
-                <h4>RWA Tokenization</h4>
-                <p>Pre-execution valuation and verification for real-world asset tokenization.</p>
+                <h3>Average-crypto-feed</h3>
+                <p>x402 Cronos-SEDA consensus for multi-asset average feeds.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/tree/main/seda-example-ops/examples/multi-price-feed/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
-
             <div class="usecase-card">
                 <div class="usecase-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
                     </svg>
                 </div>
-                <h4>Governance</h4>
-                <p>Objective oracle-driven inputs for protocol governance decisions.</p>
+                <h3>Us-rates</h3>
+                <p>x402 Cronos-SEDA consensus for U.S. rates data.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/tree/main/seda-example-ops/examples/us-rates/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
-
             <div class="usecase-card">
                 <div class="usecase-icon">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <rect x="4" y="4" width="16" height="16" rx="2" ry="2"/>
                         <rect x="9" y="9" width="6" height="6"/>
+                        <line x1="9" y1="1" x2="9" y2="4"/>
+                        <line x1="15" y1="1" x2="15" y2="4"/>
+                        <line x1="9" y1="20" x2="9" y2="23"/>
+                        <line x1="15" y1="20" x2="15" y2="23"/>
                     </svg>
                 </div>
-                <h4>IoT Data</h4>
-                <p>Trusted real-world signals for smart contracts. Verify sensor data integrity.</p>
+                <h3>Generic-dxfeed</h3>
+                <p>x402 Cronos-SEDA consensus for generic dxFeed integration.</p>
+                <a class="usecase-link" href="https://github.com/gazzimon/x402-oracle/tree/main/seda-example-ops/examples/generic-dxfeed/README.md" target="_blank" rel="noreferrer">View example</a>
             </div>
         </div>
     </section>
@@ -661,17 +645,7 @@
         <div class="footer-content">
             <div class="footer-brand">
                 <div class="footer-logo">
-                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-                        <circle cx="16" cy="16" r="14" stroke="url(#footer-logo-gradient)" stroke-width="2"/>
-                        <path d="M16 8L16 16L22 22" stroke="url(#footer-logo-gradient)" stroke-width="2" stroke-linecap="round"/>
-                        <circle cx="16" cy="16" r="3" fill="url(#footer-logo-gradient)"/>
-                        <defs>
-                            <linearGradient id="footer-logo-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                                <stop offset="0%" stop-color="#00ff9d"/>
-                                <stop offset="100%" stop-color="#3b82f6"/>
-                            </linearGradient>
-                        </defs>
-                    </svg>
+                    <img src="images/logo_transparent.png" alt="Giorgio Moroder logo">
                     <span>GIORGIO MORODER</span>
                 </div>
                 <p class="footer-tagline">Paid execution for LP-backed synthetic claims</p>
@@ -679,7 +653,7 @@
             <div class="footer-links">
                 <div class="footer-column">
                     <h4>Resources</h4>
-                    <a href="https://github.com" target="_blank">GitHub</a>
+                    <a href="https://github.com/gazzimon/giorgio_moroder" target="_blank">GitHub</a>
                     <a href="#docs">Documentation</a>
                     <a href="#explorer">Explorer</a>
                 </div>
