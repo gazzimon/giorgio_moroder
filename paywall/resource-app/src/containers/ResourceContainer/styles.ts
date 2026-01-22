@@ -281,6 +281,13 @@ export const ButtonRow = styled.div`
   gap: 12px;
 `;
 
+export const Disclaimer = styled.p`
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+`;
+
 export const PrimaryButton = styled.button<{ disabled?: boolean }>`
   flex: 1;
   min-width: 200px;

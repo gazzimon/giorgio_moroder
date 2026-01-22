@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { DataViewer } from '../../components/DataViewer';
 import { useX402Flow } from '../../hooks/useX402Flow';
 import { createApiClient } from '../../integration/api';
+import type { OraclePayload } from '../../integration/api.interfaces';
 import {
   Badge,
   AmountField,
@@ -26,6 +27,7 @@ import {
   TopBar,
   TopLink,
   TopLinks,
+  Disclaimer,
   MetaItem,
   MetaKey,
   MetaLink,
@@ -62,9 +64,8 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
   const api = useMemo(() => createApiClient({ apiBase: props.apiBase }), [props.apiBase]);
   const pairs = useMemo(() => ['WCRO-USDC'], []);
   const [pair, setPair] = useState<string>(pairs[0] ?? '');
-  const [amountUSDC, setAmountUSDC] = useState<string>('0');
-  const [amountTCRO, setAmountTCRO] = useState<string>('0');
-  const [latestPayload, setLatestPayload] = useState<Record<string, unknown> | null>(null);
+  const [amountUSDC, setAmountUSDC] = useState<string>('1');
+  const [latestPayload, setLatestPayload] = useState<OraclePayload | null>(null);
   const [latestData, setLatestData] = useState<string>('');
 
   const toBaseUnits = (value: string, decimals: number): string => {
@@ -185,11 +186,12 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
       </TopBar>
       <ContentGrid>
         <Hero>
-          <Badge>SEDA / x402 / Cronos</Badge>
-          <Title>Execution-grade pricing, unlocked via pay-per-query access.</Title>
+          <Badge>SEDA · x402 · Cronos | Execution Layer</Badge>
+          <Title>Oracle-authorized on-chain execution</Title>
           <Subtitle>
-            Select the pair, sign the EIP-3009 payment, and re-fetch the payload. Each request is
-            settled on Cronos and verified by SEDA recomputation.
+            USX402 is a USD-referenced execution claim, not a stablecoin or fund share. Issuance
+            and settlement follow explicit, oracle-authorized rules. Capital is deployed
+            conditionally under LP strategies when risk constraints allow.
           </Subtitle>
           <StatRow>
             <StatCard>
@@ -209,12 +211,12 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
 
         <Panel>
           <PanelHeader>
-            <PanelTitle>Oracle Console</PanelTitle>
+            <PanelTitle>Execution Request Console</PanelTitle>
             <StatusPill tone={tone}>Status: {status || 'Idle'}</StatusPill>
           </PanelHeader>
 
           <PanelSection>
-            <SectionLabel>Market pair</SectionLabel>
+            <SectionLabel>LP-managed</SectionLabel>
             <PairGrid>
               {pairs.map((item) => (
                 <PairChip key={item} active={pair === item} onClick={() => setPair(item)}>
@@ -225,25 +227,15 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
           </PanelSection>
 
           <PanelSection>
-            <SectionLabel>Payment intent</SectionLabel>
+            <SectionLabel>Requested Execution Amount</SectionLabel>
             <AmountGrid>
               <div>
-                <AmountLabel>devUSDC.e</AmountLabel>
+                <AmountLabel>USDC</AmountLabel>
                 <AmountField
                   inputMode="decimal"
                   value={amountUSDC}
                   onChange={(event) => setAmountUSDC(event.target.value)}
                   placeholder="USDC amount"
-                />
-              </div>
-              <div>
-                <AmountLabel>TCRO</AmountLabel>
-                <AmountField
-                  inputMode="decimal"
-                  value="0"
-                  onChange={() => setAmountTCRO('0')}
-                  placeholder="TCRO disabled (MVP)"
-                  disabled
                 />
               </div>
             </AmountGrid>
@@ -259,15 +251,20 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
               }
               disabled={isBusy}
             >
-              {isBusy ? 'Working...' : 'Fetch Price'}
+              {isBusy ? 'Working...' : 'SUBMIT'}
             </PrimaryButton>
             <GhostButton onClick={() => void retryWithPaymentId()} disabled={!paymentId || isBusy}>
               Retry with paymentId
             </GhostButton>
           </ButtonRow>
+          <Disclaimer>
+            This is not a swap. Submission schedules an execution request that is guaranteed, but
+            time-deferred. Oracle evaluation and policy checks determine when and how execution
+            occurs. Execution Fee: 1 USDC (paid via x402).
+          </Disclaimer>
 
           <Steps>
-            {['Request', '402 Challenge', 'Signature', 'Settlement', 'Unlocked'].map(
+            {['Request', '402 Challenge', 'Signature', 'Execution Authorized & Scheduled', 'Finish'].map(
               (label, index) => (
                 <StepItem key={label} active={index === activeStep}>
                   {index + 1}. {label}

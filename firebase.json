@@ -8,6 +8,10 @@
     ],
     "rewrites": [
       {
+        "source": "/paywall/**",
+        "destination": "/paywall/index.html"
+      },
+      {
         "source": "/app/**",
         "destination": "/app/index.html"
       },
