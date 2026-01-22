@@ -62,7 +62,12 @@ function loadRelayerState(): RelayerState {
   }
 }
 
-function pickLatestPair(state: RelayerState, preferredPair: string): { pair: string; meta: RelayerState['lastByPair'][string] } | null {
+type RelayerPairMeta = NonNullable<RelayerState['lastByPair']>[string];
+
+function pickLatestPair(
+  state: RelayerState,
+  preferredPair: string
+): { pair: string; meta: RelayerPairMeta } | null {
   const lastByPair = state.lastByPair ?? {};
   const preferred = lastByPair[preferredPair];
   if (preferred) {
