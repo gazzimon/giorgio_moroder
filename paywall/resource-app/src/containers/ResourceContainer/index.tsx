@@ -186,12 +186,11 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
       </TopBar>
       <ContentGrid>
         <Hero>
-          <Badge>SEDA · x402 · Cronos | Execution Layer</Badge>
-          <Title>Oracle-authorized on-chain execution</Title>
+          <Badge>Concentrated Liquidity Manager · Oracle-Driven</Badge>
+          <Title>Automated range management on Cronos</Title>
           <Subtitle>
-            USX402 is a USD-referenced execution claim, not a stablecoin or fund share. Issuance
-            and settlement follow explicit, oracle-authorized rules. Capital is deployed
-            conditionally under LP strategies when risk constraints allow.
+            Oracle signals select Steady/Wild/Exit strategy. Execution is scheduled and
+            conditional. Requests are gated by x402 and settled on Cronos after SEDA consensus.
           </Subtitle>
           <StatRow>
             <StatCard>
@@ -211,12 +210,12 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
 
         <Panel>
           <PanelHeader>
-            <PanelTitle>Execution Request Console</PanelTitle>
+            <PanelTitle>Strategy Execution Console</PanelTitle>
             <StatusPill tone={tone}>Status: {status || 'Idle'}</StatusPill>
           </PanelHeader>
 
           <PanelSection>
-            <SectionLabel>LP-managed</SectionLabel>
+            <SectionLabel>Active Strategy</SectionLabel>
             <PairGrid>
               {pairs.map((item) => (
                 <PairChip key={item} active={pair === item} onClick={() => setPair(item)}>
@@ -227,7 +226,7 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
           </PanelSection>
 
           <PanelSection>
-            <SectionLabel>Requested Execution Amount</SectionLabel>
+            <SectionLabel>Liquidity Deployment (USDC)</SectionLabel>
             <AmountGrid>
               <div>
                 <AmountLabel>USDC</AmountLabel>
@@ -251,20 +250,19 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
               }
               disabled={isBusy}
             >
-              {isBusy ? 'Working...' : 'SUBMIT'}
+              {isBusy ? 'Working...' : 'REQUEST STRATEGY EXECUTION'}
             </PrimaryButton>
             <GhostButton onClick={() => void retryWithPaymentId()} disabled={!paymentId || isBusy}>
               Retry with paymentId
             </GhostButton>
           </ButtonRow>
           <Disclaimer>
-            This is not a swap. Submission schedules an execution request that is guaranteed, but
-            time-deferred. Oracle evaluation and policy checks determine when and how execution
-            occurs. Execution Fee: 1 USDC (paid via x402).
+            Not a swap. This schedules a strategy execution request. Oracle evaluation determines
+            range selection and timing. Execution Fee: 1 USDC (paid via x402).
           </Disclaimer>
 
           <Steps>
-            {['Request', '402 Challenge', 'Signature', 'Execution Authorized & Scheduled', 'Finish'].map(
+            {['Request', '402 Challenge', 'Signature', 'Strategy Selected & Scheduled', 'Position Updated'].map(
               (label, index) => (
                 <StepItem key={label} active={index === activeStep}>
                   {index + 1}. {label}

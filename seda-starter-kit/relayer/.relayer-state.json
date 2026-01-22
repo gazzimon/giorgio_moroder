@@ -39,7 +39,9 @@
     "73afb7f81111b334533b45a6afc6c87e565df50a582794af1b8692dc23253a6d": true,
     "7801859496945191b4337468ca9824fdfbb8c02bd57a256b57d5957469950a73": true,
     "2cc73fd8a4b7877d9d52a1ab868fb231b2a7dc1fc23c458728d3762990062738": true,
-    "ddbbc02622a9c1f50efcd19fbae35afb91d4c70878804e63d02eda41492d2bb1": true
+    "ddbbc02622a9c1f50efcd19fbae35afb91d4c70878804e63d02eda41492d2bb1": true,
+    "4af8cc6526418c64a674fd85efe5263a7f326752c6a000edf3586ae36cce19f7": true,
+    "ccbaaed4c54a92868c673ce87d7cd705928e009f47ffdd15a7925b55725623a7": true
   },
   "lastByPair": {
     "USDT-USDC": {
@@ -49,17 +51,17 @@
       "updatedAt": "2026-01-15T02:53:12.266Z"
     },
     "WCRO-USDC": {
-      "requestId": "ddbbc02622a9c1f50efcd19fbae35afb91d4c70878804e63d02eda41492d2bb1",
-      "drBlockHeight": 7346699,
-      "txHash": "0xa0ffee192f4542a47b23e691616e870095c043da893e7d84af03baa016d32da1",
-      "updatedAt": "2026-01-21T23:12:28.662Z",
+      "requestId": "ccbaaed4c54a92868c673ce87d7cd705928e009f47ffdd15a7925b55725623a7",
+      "drBlockHeight": 7352435,
+      "txHash": "0x1931fa349124f5cae62d6fd7cadb522d07a6efa4cbfe9999b1c0e6df0f2e9ac1",
+      "updatedAt": "2026-01-22T12:12:09.202Z",
       "values": {
-        "fairPriceScaled": "92796",
-        "fairPrice": "0.092796",
-        "confidenceScoreScaled": "995344",
-        "confidenceScore": "0.995344",
-        "maxSafeExecutionSizeScaled": "25329261907",
-        "maxSafeExecutionSize": "25329.261907",
+        "fairPriceScaled": "92333",
+        "fairPrice": "0.092333",
+        "confidenceScoreScaled": "965904",
+        "confidenceScore": "0.965904",
+        "maxSafeExecutionSizeScaled": "25278303967",
+        "maxSafeExecutionSize": "25278.303967",
         "flags": "0",
         "decimals": 6
       }
