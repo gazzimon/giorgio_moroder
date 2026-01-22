@@ -1,5 +1,5 @@
-import type { GetDataResult, PostPayRequest, PostPayResult } from './api.interfaces';
-import { GetDataKind, PostPayKind, HttpStatus } from './api.interfaces';
+import type { GetDataResult, GetLatestResult, PostPayRequest, PostPayResult } from './api.interfaces';
+import { GetDataKind, GetLatestKind, PostPayKind, HttpStatus } from './api.interfaces';
 
 /**
  * Options for constructing an {@link ApiClient}.
@@ -37,6 +37,11 @@ export interface ApiClient {
     paymentId?: string,
     amounts?: { amountUSDC?: string; amountTCRO?: string }
   ): Promise<GetDataResult>;
+
+  /**
+   * Requests the latest relayed payload without payment.
+   */
+  getLatest(pair: string): Promise<GetLatestResult>;
 
   /**
    * Submits a signed payment for verification and settlement.
@@ -100,6 +105,22 @@ export function createApiClient(options: ApiClientOptions): ApiClient {
 
       return {
         kind: GetDataKind.Error,
+        status: res.status,
+        text: await res.text(),
+      };
+    },
+
+    async getLatest(pair: string): Promise<GetLatestResult> {
+      const params = new URLSearchParams({ pair });
+      const res = await fetch(`${apiBase}/api/latest?${params.toString()}`);
+      if (res.ok) {
+        return {
+          kind: GetLatestKind.Ok,
+          data: await res.json(),
+        };
+      }
+      return {
+        kind: GetLatestKind.Error,
         status: res.status,
         text: await res.text(),
       };

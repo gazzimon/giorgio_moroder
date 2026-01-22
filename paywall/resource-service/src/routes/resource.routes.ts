@@ -42,6 +42,8 @@ router.get(
   controller.getSecret.bind(controller)
 );
 
+router.get('/latest', validatePair, controller.getLatest.bind(controller));
+
 /**
  * POST `/api/pay`
  *

@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { spawn } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { ethers } from 'ethers';
 import { Facilitator, CronosNetwork, PaymentRequirements } from '@crypto.com/facilitator-client';
 import { handleX402Payment } from '../lib/middlewares/require.middleware.js';
@@ -9,11 +10,18 @@ const NETWORK = (process.env.NETWORK ?? 'cronos-testnet') as CronosNetwork;
 const CRONOS_RPC_URL = process.env.CRONOS_RPC_URL ?? '';
 const CONSUMER_ADDRESS = process.env.CONSUMER_ADDRESS ?? '';
 const SEDA_EXPLORER_BASE = process.env.SEDA_EXPLORER_BASE ?? 'https://testnet.explorer.seda.xyz';
-const RELAYER_STATE_PATH =
-  process.env.RELAYER_STATE_PATH ??
-  path.resolve(process.cwd(), '../../seda-starter-kit/relayer/.relayer-state.json');
-const SEDA_STARTER_KIT_PATH =
-  process.env.SEDA_STARTER_KIT_PATH ?? path.resolve(process.cwd(), '../../seda-starter-kit');
+const CURRENT_DIR = path.dirname(fileURLToPath(import.meta.url));
+const SERVICE_ROOT = path.resolve(CURRENT_DIR, '..', '..');
+const REPO_ROOT = path.resolve(SERVICE_ROOT, '..', '..');
+const DEFAULT_RELAYER_STATE_PATH = path.resolve(
+  REPO_ROOT,
+  'seda-starter-kit',
+  'relayer',
+  '.relayer-state.json'
+);
+const DEFAULT_SEDA_STARTER_KIT_PATH = path.resolve(REPO_ROOT, 'seda-starter-kit');
+const RELAYER_STATE_PATH = process.env.RELAYER_STATE_PATH ?? DEFAULT_RELAYER_STATE_PATH;
+const SEDA_STARTER_KIT_PATH = process.env.SEDA_STARTER_KIT_PATH ?? DEFAULT_SEDA_STARTER_KIT_PATH;
 const PAYMENT_LOG_PATH =
   process.env.PAYMENT_LOG_PATH ?? path.resolve(process.cwd(), 'payment-processed.jsonl');
 const SYNTHETICER_URL = process.env.SYNTHETICER_URL ?? '';
@@ -52,6 +60,24 @@ function loadRelayerState(): RelayerState {
   } catch {
     return {};
   }
+}
+
+function pickLatestPair(state: RelayerState, preferredPair: string): { pair: string; meta: RelayerState['lastByPair'][string] } | null {
+  const lastByPair = state.lastByPair ?? {};
+  const preferred = lastByPair[preferredPair];
+  if (preferred) {
+    return { pair: preferredPair, meta: preferred };
+  }
+  const entries = Object.entries(lastByPair)
+    .filter(([, value]) => value)
+    .sort(([, left], [, right]) => {
+      const leftTime = left?.updatedAt ? Date.parse(left.updatedAt) : 0;
+      const rightTime = right?.updatedAt ? Date.parse(right.updatedAt) : 0;
+      return rightTime - leftTime;
+    });
+  if (!entries.length) return null;
+  const [pair, meta] = entries[0];
+  return { pair, meta };
 }
 
 function extractPairFromRequirements(paymentRequirements: PaymentRequirements): string | null {
@@ -206,6 +232,71 @@ export class ResourceService {
     return {
       ok: true,
       pair,
+      fairPriceScaled: metaValues?.fairPriceScaled ?? fairPrice.toString(),
+      fairPrice: metaValues?.fairPrice ?? formatScaled(fairPrice, decimals),
+      confidenceScoreScaled: metaValues?.confidenceScoreScaled ?? confidence.toString(),
+      confidenceScore: metaValues?.confidenceScore ?? formatScaled(confidence, decimals),
+      maxSafeExecutionSizeScaled: metaValues?.maxSafeExecutionSizeScaled ?? maxSize.toString(),
+      maxSafeExecutionSize: metaValues?.maxSafeExecutionSize ?? formatScaled(maxSize, decimals),
+      flags: metaValues?.flags ?? flags.toString(),
+      decimals,
+      sedaExplorerUrl,
+      sedaRequestId: drId || null,
+      cronosTxHash: meta?.txHash ?? null,
+      relayedAt: meta?.updatedAt ?? null,
+    };
+  }
+
+  /**
+   * Returns the latest relayed payload without requiring payment.
+   */
+  async getLatestPayload(pair: string) {
+    const state = loadRelayerState();
+    const latest = pickLatestPair(state, pair);
+    if (!latest) {
+      return { ok: false, error: 'no relayer data' };
+    }
+    const { meta } = latest;
+    const metaValues = meta.values;
+
+    let chainValues: bigint[] | null = null;
+    let requestIdOnChain: string | null = null;
+    if (!metaValues) {
+      try {
+        const consumer = this.getConsumer();
+        const pairKey = ethers.keccak256(ethers.toUtf8Bytes(latest.pair));
+        const [values, requestId] = await Promise.all([
+          consumer.getLatest(pairKey),
+          consumer.getLatestRequestId(pairKey),
+        ]);
+        chainValues = (values as bigint[]).map((value) => BigInt(value.toString()));
+        requestIdOnChain = requestId?.toString?.() ?? null;
+      } catch {
+        // If chain read fails and no relayer values exist, still return placeholders.
+      }
+    }
+
+    const decimals = metaValues?.decimals ?? 6;
+    const [fairPrice, confidence, maxSize, flags] =
+      metaValues && metaValues.fairPriceScaled
+        ? [
+            BigInt(metaValues.fairPriceScaled),
+            BigInt(metaValues.confidenceScoreScaled),
+            BigInt(metaValues.maxSafeExecutionSizeScaled),
+            BigInt(metaValues.flags),
+          ]
+        : chainValues ?? [BigInt(0), BigInt(0), BigInt(0), BigInt(0)];
+
+    const drId = meta?.requestId ?? stripHexPrefix(requestIdOnChain ?? '');
+    const drBlockHeight = meta?.drBlockHeight ?? null;
+    const sedaExplorerUrl =
+      drId && drBlockHeight
+        ? `${SEDA_EXPLORER_BASE}/data-requests/${drId}/${drBlockHeight}`
+        : null;
+
+    return {
+      ok: true,
+      pair: latest.pair,
       fairPriceScaled: metaValues?.fairPriceScaled ?? fairPrice.toString(),
       fairPrice: metaValues?.fairPrice ?? formatScaled(fairPrice, decimals),
       confidenceScoreScaled: metaValues?.confidenceScoreScaled ?? confidence.toString(),

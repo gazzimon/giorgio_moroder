@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { DataViewer } from '../../components/DataViewer';
 import { useX402Flow } from '../../hooks/useX402Flow';
+import { createApiClient } from '../../integration/api';
 import {
   Badge,
   AmountField,
@@ -58,10 +59,13 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
   const { status, data, paymentId, feeUSDC, isBusy, fetchSecret, retryWithPaymentId } = useX402Flow({
     apiBase: props.apiBase,
   });
+  const api = useMemo(() => createApiClient({ apiBase: props.apiBase }), [props.apiBase]);
   const pairs = useMemo(() => ['WCRO-USDC'], []);
   const [pair, setPair] = useState<string>(pairs[0] ?? '');
   const [amountUSDC, setAmountUSDC] = useState<string>('0');
   const [amountTCRO, setAmountTCRO] = useState<string>('0');
+  const [latestPayload, setLatestPayload] = useState<Record<string, unknown> | null>(null);
+  const [latestData, setLatestData] = useState<string>('');
 
   const toBaseUnits = (value: string, decimals: number): string => {
     const trimmed = value.trim();
@@ -94,8 +98,46 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
     }
   }, [data]);
 
-  const cronosLink = payload?.cronosTxHash
-    ? `https://explorer.cronos.org/testnet/tx/${payload.cronosTxHash}`
+  const latestParsed = useMemo(() => {
+    if (!latestPayload) return null;
+    return latestPayload as {
+      pair?: string;
+      fairPrice?: string;
+      fairPriceScaled?: string;
+      confidenceScore?: string;
+      confidenceScoreScaled?: string;
+      maxSafeExecutionSize?: string;
+      maxSafeExecutionSizeScaled?: string;
+      flags?: string;
+      sedaExplorerUrl?: string | null;
+      cronosTxHash?: string | null;
+      sedaRequestId?: string | null;
+    };
+  }, [latestPayload]);
+
+  useEffect(() => {
+    let active = true;
+    const refresh = async () => {
+      const result = await api.getLatest(pair);
+      if (!active) return;
+      if (result.kind === 'ok' && result.data?.ok) {
+        setLatestPayload(result.data);
+        setLatestData(JSON.stringify(result.data, null, 2));
+      }
+    };
+    void refresh();
+    const interval = window.setInterval(refresh, 15000);
+    return () => {
+      active = false;
+      window.clearInterval(interval);
+    };
+  }, [api, pair]);
+
+  const displayPayload = payload ?? latestParsed;
+  const displayData = data || latestData;
+
+  const cronosLink = displayPayload?.cronosTxHash
+    ? `https://explorer.cronos.org/testnet/tx/${displayPayload.cronosTxHash}`
     : null;
 
   const feeLabel = useMemo(() => {
@@ -239,38 +281,38 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
       <SummaryGrid>
         <SummaryCard>
           <SummaryLabel>Pair</SummaryLabel>
-          <SummaryValue>{payload?.pair ?? pair}</SummaryValue>
+          <SummaryValue>{displayPayload?.pair ?? pair}</SummaryValue>
           <SummaryMeta>Active market</SummaryMeta>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>Fair Price</SummaryLabel>
-          <SummaryValue>{payload?.fairPrice ?? '--'}</SummaryValue>
-          <SummaryMeta>scaled {payload?.fairPriceScaled ?? '--'}</SummaryMeta>
+          <SummaryValue>{displayPayload?.fairPrice ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {displayPayload?.fairPriceScaled ?? '--'}</SummaryMeta>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>Confidence</SummaryLabel>
-          <SummaryValue>{payload?.confidenceScore ?? '--'}</SummaryValue>
-          <SummaryMeta>scaled {payload?.confidenceScoreScaled ?? '--'}</SummaryMeta>
+          <SummaryValue>{displayPayload?.confidenceScore ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {displayPayload?.confidenceScoreScaled ?? '--'}</SummaryMeta>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>Max Size</SummaryLabel>
-          <SummaryValue>{payload?.maxSafeExecutionSize ?? '--'}</SummaryValue>
-          <SummaryMeta>scaled {payload?.maxSafeExecutionSizeScaled ?? '--'}</SummaryMeta>
+          <SummaryValue>{displayPayload?.maxSafeExecutionSize ?? '--'}</SummaryValue>
+          <SummaryMeta>scaled {displayPayload?.maxSafeExecutionSizeScaled ?? '--'}</SummaryMeta>
         </SummaryCard>
       </SummaryGrid>
 
       <ResultCard>
         <ResultLabel>Latest Payload</ResultLabel>
-        <DataViewer data={data} />
+        <DataViewer data={displayData} />
         <MetaGrid>
           <MetaItem>
             <MetaKey>Flags</MetaKey>
-            <MetaValue>{payload?.flags ?? '--'}</MetaValue>
+            <MetaValue>{displayPayload?.flags ?? '--'}</MetaValue>
           </MetaItem>
           <MetaItem>
             <MetaKey>SEDA</MetaKey>
-            {payload?.sedaExplorerUrl ? (
-              <MetaLink href={payload.sedaExplorerUrl} target="_blank" rel="noreferrer">
+            {displayPayload?.sedaExplorerUrl ? (
+              <MetaLink href={displayPayload.sedaExplorerUrl} target="_blank" rel="noreferrer">
                 View consensus
               </MetaLink>
             ) : (
@@ -281,7 +323,7 @@ export function ResourceContainer(props: ResourceContainerProps): JSX.Element {
             <MetaKey>Cronos Tx</MetaKey>
             {cronosLink ? (
               <MetaLink href={cronosLink} target="_blank" rel="noreferrer">
-                {payload?.cronosTxHash}
+                {displayPayload?.cronosTxHash}
               </MetaLink>
             ) : (
               <MetaValue>--</MetaValue>

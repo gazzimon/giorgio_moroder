@@ -76,6 +76,23 @@ export interface PaymentChallenge {
  */
 export type GetDataResponse = unknown;
 
+export interface OraclePayload {
+  ok: boolean;
+  pair?: string;
+  fairPrice?: string;
+  fairPriceScaled?: string;
+  confidenceScore?: string;
+  confidenceScoreScaled?: string;
+  maxSafeExecutionSize?: string;
+  maxSafeExecutionSizeScaled?: string;
+  flags?: string;
+  decimals?: number;
+  sedaExplorerUrl?: string | null;
+  sedaRequestId?: string | null;
+  cronosTxHash?: string | null;
+  relayedAt?: string | null;
+}
+
 /**
  * Request payload for `POST /api/pay`.
  */
@@ -134,6 +151,10 @@ export type GetDataResult =
   | { kind: GetDataKind.PaymentRequired; challenge: PaymentChallenge }
   | { kind: GetDataKind.Error; status: number; text: string };
 
+export type GetLatestResult =
+  | { kind: GetLatestKind.Ok; data: OraclePayload }
+  | { kind: GetLatestKind.Error; status: number; text: string };
+
 /**
  * Discriminated result returned by {@link ApiClient.postPay}.
  */
@@ -155,6 +176,11 @@ export enum GetDataKind {
   PaymentRequired = 'payment_required',
 
   /** An unexpected error occurred. */
+  Error = 'error',
+}
+
+export enum GetLatestKind {
+  Ok = 'ok',
   Error = 'error',
 }
 

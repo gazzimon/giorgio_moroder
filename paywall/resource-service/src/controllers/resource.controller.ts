@@ -59,6 +59,24 @@ export class ResourceController {
   }
 
   /**
+   * GET `/api/latest`
+   *
+   * Public endpoint that returns the most recent relayed payload.
+   */
+  public async getLatest(req: Request, res: Response, next: NextFunction) {
+    try {
+      const pair = String(req.query.pair ?? '').trim().toUpperCase();
+      if (!pair) {
+        return res.status(HttpCode.BadRequest).json({ error: 'missing pair' });
+      }
+      const response = await this.resourceService.getLatestPayload(pair);
+      return res.status(HttpCode.Ok).json(response);
+    } catch (e) {
+      next(e);
+    }
+  }
+
+  /**
    * POST `/api/pay`
    *
    * Validates required payment fields, then:
